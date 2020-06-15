@@ -1,0 +1,17 @@
+vicon2_driver_node:
+  ros__parameters:
+    stream_mode: "ClientPull"
+    host_name: "192.168.10.1:801"
+    tf_ref_frame_id: "vicon_world"
+    tracked_frame_suffix: "vicon"
+    publish_markers: true
+    marker_data_enabled: false
+    unlabeled_marker_data_enabled: false
+    lastFrameNumber: 0
+    frameCount: 0
+    droppedFrameCount: 0
+    n_markers: 0
+    n_unlabeled_markers: 0
+    qos_history_policy: "keep_all"         # keep_all / keep_last
+    qos_reliability_policy: "best_effort"  # best_effort / reliable
+    qos_depth: 10                         # 10 / 100 / 1000
