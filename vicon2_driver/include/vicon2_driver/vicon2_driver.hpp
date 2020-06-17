@@ -23,7 +23,6 @@
 #include <string>
 #include <memory>
 #include <chrono>
-#include <vector>
 
 #include "rclcpp/time.hpp"
 
@@ -35,8 +34,12 @@
 #include "std_msgs/msg/empty.hpp"
 
 #include "rclcpp/rclcpp.hpp"
+#include "rclcpp/node_options.hpp"
 #include "rclcpp/node_interfaces/node_logging.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
+#include "rclcpp_lifecycle/visibility_control.h"
+#include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
+#include "rcl_lifecycle/rcl_lifecycle.h"
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
 #include "lifecycle_msgs/srv/change_state.hpp"
@@ -45,34 +48,42 @@
 #include "tf2/buffer_core.h"
 #include "tf2_ros/transform_broadcaster.h"
 
-#include "ViconDataStreamSDK/DataStreamClient.h"
+#include <vicon2_driver/vicon2_driver.hpp>
 
-class ViconDriverNode : public rclcpp_lifecycle::LifecycleNode
+#include "DataStreamClient.h"
+
+class ViconDriver : public rclcpp_lifecycle::LifecycleNode
 {
 public:
-  explicit ViconDriverNode(
-    const rclcpp::NodeOptions options =
+
+  /*
+  explicit ViconDriver(const std::string & node_name, const rclcpp::NodeOptions options = 
     rclcpp::NodeOptions().parameter_overrides(
-      std::vector<rclcpp::Parameter> {
-    rclcpp::Parameter("use_sim_time", true)
-  }));
+      std::vector<rclcpp::Parameter>{
+        rclcpp::Parameter("use_sim_time", true)
+      }
+    )
+  ) : LifecycleNode(node_name, options)
+  {}
+  */
 
-  using CallbackReturnT =
-    rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
+  explicit ViconDriver(const std::string & node_name)
+  : LifecycleNode(node_name, 
+    rclcpp::NodeOptions().parameter_overrides(std::vector<rclcpp::Parameter>
+    {
+      rclcpp::Parameter("use_sim_time", true)
+    }
+    ))
+  {}
 
-  CallbackReturnT on_configure(const rclcpp_lifecycle::State & state);
-  CallbackReturnT on_activate(const rclcpp_lifecycle::State & state);
-  CallbackReturnT on_deactivate(const rclcpp_lifecycle::State & state);
-  CallbackReturnT on_cleanup(const rclcpp_lifecycle::State & state);
-  CallbackReturnT on_shutdown(const rclcpp_lifecycle::State & state);
-  CallbackReturnT on_error(const rclcpp_lifecycle::State & state);
+  
   bool connect_vicon();
   void set_settings_vicon();
   void start_vicon();
   bool stop_vicon();
   void initParameters();
 
-protected:
+private:
   ViconDataStreamSDK::CPP::Client client;
   // rclcpp::Node::SharedPtr vicon_node;
   // std::shared_ptr<rclcpp::SyncParametersClient> parameters_client;
@@ -104,6 +115,14 @@ protected:
     int marker_num, const rclcpp::Time & frame_time);
   std::shared_ptr<rclcpp::Client<lifecycle_msgs::srv::ChangeState>> client_change_state_;
   rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::Empty>::SharedPtr update_pub_;
+protected:
+  using CallbackReturnT = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
+  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn on_configure(const rclcpp_lifecycle::State &);
+  CallbackReturnT on_activate(const rclcpp_lifecycle::State & state);
+  CallbackReturnT on_deactivate(const rclcpp_lifecycle::State & state);
+  CallbackReturnT on_cleanup(const rclcpp_lifecycle::State & state);
+  CallbackReturnT on_shutdown(const rclcpp_lifecycle::State & state);
+  CallbackReturnT on_error(const rclcpp_lifecycle::State & state);
 };
 
 static
