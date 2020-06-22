@@ -1,5 +1,7 @@
 # mocap4ros_vicon
 
+**To use and compile this project is obligatory to download first the [mocap4ros_msgs](https://github.com/MOCAP4ROS2-Project/mocap4ros_msgs) repository in your workspace.**
+
 This repository contains the drivers to run the mocap4ros_project with vicon.
 
 # Vicon DataStream SDK
