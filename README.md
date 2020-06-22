@@ -1,16 +1,17 @@
 # mocap4ros_vicon
 
-**To use and compile this project is obligatory to download first the [mocap4ros_msgs](https://github.com/MOCAP4ROS2-Project/mocap4ros_msgs) repository in your workspace.**
-
 This repository contains the drivers to run the mocap4ros_project with vicon.
 
-# Vicon DataStream SDK
+**To use and compile this project is obligatory to download first the [mocap4ros_msgs](https://github.com/MOCAP4ROS2-Project/mocap4ros_msgs) repository in your workspace and follow the next instructions:**
+
+
+## Vicon DataStream SDK
 
 Get the official binaries released in the official download page [here](https://www.vicon.com/software/datastream-sdk/?section=downloads).
 
 You can check the documentation [here](https://docs.vicon.com/spaces/viewspace.action?key=DSSDK19).
 
-## Installing on Linux
+### Installing on Linux
 
 Copy all the libraries to /usr/local/lib and move the headers to /usr/local/include/ViconDataStreamSDK/.
 
@@ -29,7 +30,7 @@ It's convenient to automatically update this environment variable in your bash s
 
 `echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib/"`
 
-## Installing on Windows
+### Installing on Windows
 
 Execute the installer of your distribution (typically Win64).
 
@@ -37,7 +38,7 @@ SDK files are placed to `C:\Program Files\Vicon\DataStream SDK\Win64\CPP` by def
 
 `set PATH=%PATH%;C:\Program Files\Vicon\DataStream SDK\Win64\CPP`
 
-## Guide
+### Guide
 
 - Connect your computer/laptop to the same network as Vicon system is connected.
 
