@@ -10,7 +10,7 @@ install:
 
 matrix:
   include:
-    - env: JOB_TYPE=dashing
+    - env: JOB_TYPE=eloquent
       stage: build
       name: "Build"
       script: .ros2ci/travis.bash $JOB_TYPE
