@@ -79,3 +79,6 @@ research and innovation programme under grant agreement no. 732287.
 <img align="center" src="https://github.com/MOCAP4ROS2-Project/mocap4ros_exp_and_resources/blob/master/resources/mocap4ros_arch.png" 
     alt="mocap4ros_arch" width="100%">
 </p>
+
+
+[![Build Status](https://travis-ci.com/MOCAP4ROS2-Project/mocap4ros_vicon.svg?branch=master)](https://travis-ci.com/MOCAP4ROS2-Project/mocap4ros_vicon)
