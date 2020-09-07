@@ -243,7 +243,7 @@ void ViconDriverNode::process_markers(const rclcpp::Time & frame_time, unsigned 
       client.IsUnlabeledMarkerDataEnabled().Enabled ? "true" : "false");
   }
   n_markers_ = 0;
-  mocap4ros_msgs::msg::Markers markers_msg;
+  mocap4ros2_msgs::msg::Markers markers_msg;
   markers_msg.header.stamp = frame_time;
   markers_msg.frame_number = vicon_frame_num;
   unsigned int UnlabeledMarkerCount = client.GetUnlabeledMarkerCount().MarkerCount;
@@ -265,7 +265,7 @@ void ViconDriverNode::process_markers(const rclcpp::Time & frame_time, unsigned 
     if (_Output_GetUnlabeledMarkerGlobalTranslation.Result ==
       ViconDataStreamSDK::CPP::Result::Success)
     {
-      mocap4ros_msgs::msg::Marker this_marker;
+      mocap4ros2_msgs::msg::Marker this_marker;
       this_marker.translation.x = _Output_GetUnlabeledMarkerGlobalTranslation.Translation[0];
       this_marker.translation.y = _Output_GetUnlabeledMarkerGlobalTranslation.Translation[1];
       this_marker.translation.z = _Output_GetUnlabeledMarkerGlobalTranslation.Translation[2];
@@ -290,7 +290,7 @@ void ViconDriverNode::process_markers(const rclcpp::Time & frame_time, unsigned 
 }
 
 void ViconDriverNode::marker_to_tf(
-  mocap4ros_msgs::msg::Marker marker,
+  mocap4ros2_msgs::msg::Marker marker,
   int marker_num, const rclcpp::Time & frame_time)
 {
   tf2::Transform transform;
@@ -359,7 +359,7 @@ ViconDriverNode::on_configure(const rclcpp_lifecycle::State & state)
   client_change_state_ = this->create_client<lifecycle_msgs::srv::ChangeState>(
     "/vicon2_driver/change_state");
 
-  marker_pub_ = create_publisher<mocap4ros_msgs::msg::Markers>(
+  marker_pub_ = create_publisher<mocap4ros2_msgs::msg::Markers>(
     tracked_frame_suffix_ + "/markers", 100);
 
   update_pub_ = create_publisher<std_msgs::msg::Empty>(
