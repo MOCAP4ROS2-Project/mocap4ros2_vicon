@@ -1,10 +1,10 @@
 # mocap4ros_vicon
 
-[![Build Status](https://travis-ci.com/MOCAP4ROS2-Project/mocap4ros_vicon.svg?branch=master)](https://travis-ci.com/MOCAP4ROS2-Project/mocap4ros_vicon)
+[![Build Status](https://travis-ci.com/MOCAP4ROS2-Project/mocap4ros2_vicon.svg?branch=master)](https://travis-ci.com/MOCAP4ROS2-Project/mocap4ros_vicon)
 
 This repository contains the drivers to run the mocap4ros_project with vicon.
 
-**To use and compile this project is obligatory to download first the [mocap4ros_msgs](https://github.com/MOCAP4ROS2-Project/mocap4ros_msgs) repository in your workspace and follow the next instructions:**
+**To use and compile this project is obligatory to download first the [mocap4ros2_msgs](https://github.com/MOCAP4ROS2-Project/mocap4ros2_msgs) repository in your workspace and follow the next instructions:**
 
 
 ## Vicon DataStream SDK
