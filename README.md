@@ -1,8 +1,8 @@
-# mocap4ros_vicon
+# mocap4ros2_vicon
 
-[![Build Status](https://travis-ci.com/MOCAP4ROS2-Project/mocap4ros2_vicon.svg?branch=master)](https://travis-ci.com/MOCAP4ROS2-Project/mocap4ros_vicon)
+[![Build Status](https://travis-ci.com/MOCAP4ROS2-Project/mocap4ros2_vicon.svg?branch=master)](https://travis-ci.com/MOCAP4ROS2-Project/mocap4ros2_vicon)
 
-This repository contains the drivers to run the mocap4ros_project with vicon.
+This repository contains the drivers to run the mocap4ros2_project with vicon.
 
 **To use and compile this project is obligatory to download first the [mocap4ros2_msgs](https://github.com/MOCAP4ROS2-Project/mocap4ros2_msgs) repository in your workspace and follow the next instructions:**
 
@@ -46,7 +46,7 @@ SDK files are placed to `C:\Program Files\Vicon\DataStream SDK\Win64\CPP` by def
 
 - Run Nexus (Vicon software) and calibrate cameras (if required).
 
-- Edit some parameters on configuration file (mocap4ros_drivers/vicon2_driver/config/vicon2_driver_params.yaml). \
+- Edit some parameters on configuration file (mocap4ros2_drivers/vicon2_driver/config/vicon2_driver_params.yaml). \
 e.g. `host_name` parameter.
 
 - Launch the Vicon-ROS2 driver launcher: `ros2 launch vicon2_driver vicon2.launch.py`
@@ -78,6 +78,6 @@ research and innovation programme under grant agreement no. 732287.
 ***
 
 <p align="center"> 
-<img align="center" src="https://github.com/MOCAP4ROS2-Project/mocap4ros_exp_and_resources/blob/master/resources/mocap4ros_arch.png" 
+<img align="center" src="https://github.com/MOCAP4ROS2-Project/mocap4ros2_exp_and_resources/blob/master/resources/mocap4ros_arch.png" 
     alt="mocap4ros_arch" width="100%">
 </p>
