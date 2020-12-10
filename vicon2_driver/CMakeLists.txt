@@ -50,7 +50,7 @@ add_executable(vicon2_driver_main
 ament_target_dependencies(vicon2_driver_main ${dependencies})
 target_link_libraries(vicon2_driver_main
   ${PROJECT_NAME}
-  ${${LIBVICONDATASTREAM_SDK_LIBRARY}}
+  ${LIBVICONDATASTREAM_SDK_LIBRARY}
 )
 
 ament_target_dependencies(vicon2_driver ${dependencies})
