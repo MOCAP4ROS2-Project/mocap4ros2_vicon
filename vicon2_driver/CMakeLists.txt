@@ -11,6 +11,8 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake/")
+
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
@@ -18,6 +20,8 @@ find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(mocap4ros2_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+
+find_package(ViconDataStreamSDK_CPP REQUIRED)
 
 set(dependencies
   rclcpp
@@ -29,10 +33,16 @@ set(dependencies
 
 include_directories(
   include
+  ${LIBVICONDATASTREAM_SDK_INCLUDE_DIR}
 )
 
-add_library(${PROJECT_NAME} SHARED src/vicon2_driver.cpp)
+add_library(
+  ${PROJECT_NAME} 
+src/vicon2_driver.cpp)
+
 ament_target_dependencies(${PROJECT_NAME} ${dependencies})
+target_compile_definitions(${PROJECT_NAME}
+  PRIVATE "VICON_BUILDING_LIBRARY")
 
 add_executable(vicon2_driver_main
   src/vicon2_driver_main.cpp
@@ -40,11 +50,11 @@ add_executable(vicon2_driver_main
 ament_target_dependencies(vicon2_driver_main ${dependencies})
 target_link_libraries(vicon2_driver_main
   ${PROJECT_NAME}
-  ViconDataStreamSDK_CPP
+  ${LIBVICONDATASTREAM_SDK_LIBRARY}
 )
 
 ament_target_dependencies(vicon2_driver ${dependencies})
-target_link_libraries(vicon2_driver ViconDataStreamSDK_CPP)
+target_link_libraries(vicon2_driver ${LIBVICONDATASTREAM_SDK_LIBRARY})
 
 install(DIRECTORY include/
   DESTINATION include/
@@ -57,12 +67,17 @@ install(DIRECTORY
 )
 
 install(TARGETS
-  ${PROJECT_NAME}
   vicon2_driver_main
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
+
+install(TARGETS
+  ${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
 
 if(BUILD_TESTING)
 

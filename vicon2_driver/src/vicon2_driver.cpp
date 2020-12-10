@@ -215,7 +215,7 @@ void ViconDriverNode::process_frame()
   lastFrameNumber_ = OutputFrameNum.FrameNumber;
 
   if (frameDiff != 0) {
-    rclcpp::Duration vicon_latency(client.GetLatencyTotal().Total);
+    rclcpp::Duration vicon_latency(std::chrono::duration<double>(client.GetLatencyTotal().Total));
     if (publish_markers_) {
       process_markers(now_time - vicon_latency, lastFrameNumber_);
     }
