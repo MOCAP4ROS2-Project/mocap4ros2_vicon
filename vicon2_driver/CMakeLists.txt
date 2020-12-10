@@ -19,6 +19,8 @@ find_package(tf2_ros REQUIRED)
 find_package(mocap4ros2_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 
+find_library(ViconDataStreamSDK_CPP ViconDataStreamSDK_CPP.lib)
+
 set(dependencies
   rclcpp
   rclcpp_lifecycle
@@ -29,10 +31,18 @@ set(dependencies
 
 include_directories(
   include
+  "C:\\Program Files\\Vicon\\DataStream SDK\\Win64\\CPP"
 )
 
-add_library(${PROJECT_NAME} SHARED src/vicon2_driver.cpp)
+add_library(
+  ${PROJECT_NAME} 
+src/vicon2_driver.cpp)
+
 ament_target_dependencies(${PROJECT_NAME} ${dependencies})
+target_compile_definitions(${PROJECT_NAME}
+  PRIVATE "VICON_BUILDING_LIBRARY")
+
+message(STATUS "-----> ${ViconDataStreamSDK_CPP}")
 
 add_executable(vicon2_driver_main
   src/vicon2_driver_main.cpp
@@ -40,11 +50,11 @@ add_executable(vicon2_driver_main
 ament_target_dependencies(vicon2_driver_main ${dependencies})
 target_link_libraries(vicon2_driver_main
   ${PROJECT_NAME}
-  ViconDataStreamSDK_CPP
+  ${ViconDataStreamSDK_CPP}
 )
 
 ament_target_dependencies(vicon2_driver ${dependencies})
-target_link_libraries(vicon2_driver ViconDataStreamSDK_CPP)
+target_link_libraries(vicon2_driver ${ViconDataStreamSDK_CPP})
 
 install(DIRECTORY include/
   DESTINATION include/
@@ -58,11 +68,16 @@ install(DIRECTORY
 
 install(TARGETS
   ${PROJECT_NAME}
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
+)
+
+install(TARGETS
   vicon2_driver_main
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
-  RUNTIME DESTINATION lib/${PROJECT_NAME}
+  RUNTIME DESTINATION bin
 )
+
 
 if(BUILD_TESTING)
 
