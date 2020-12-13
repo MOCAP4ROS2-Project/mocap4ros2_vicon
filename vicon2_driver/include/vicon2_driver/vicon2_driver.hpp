@@ -27,10 +27,10 @@
 
 #include "rclcpp/time.hpp"
 
-#include "mocap4ros2_msgs/msg/marker.hpp"
-#include "mocap4ros2_msgs/msg/markers.hpp"
-#include "mocap4ros2_msgs/srv/vicon_calib_seg.hpp"
-#include "mocap4ros2_msgs/srv/vicon_grab_pose.hpp"
+#include "mocap_msgs/msg/marker.hpp"
+#include "mocap_msgs/msg/markers.hpp"
+#include "mocap_msgs/srv/vicon_calib_seg.hpp"
+#include "mocap_msgs/srv/vicon_grab_pose.hpp"
 
 #include "std_msgs/msg/empty.hpp"
 
@@ -79,7 +79,7 @@ protected:
   rclcpp::Time now_time;
   std::string myParam;
   // rclcpp::Publisher<mocap4ros_msgs::msg::Markers>::SharedPtr marker_pub_;
-  rclcpp_lifecycle::LifecyclePublisher<mocap4ros2_msgs::msg::Markers>::SharedPtr marker_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<mocap_msgs::msg::Markers>::SharedPtr marker_pub_;
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
   std::string stream_mode_;
   std::string host_name_;
@@ -100,7 +100,7 @@ protected:
   void process_frame();
   void process_markers(const rclcpp::Time & frame_time, unsigned int vicon_frame_num);
   void marker_to_tf(
-    mocap4ros2_msgs::msg::Marker marker,
+    mocap_msgs::msg::Marker marker,
     int marker_num, const rclcpp::Time & frame_time);
   std::shared_ptr<rclcpp::Client<lifecycle_msgs::srv::ChangeState>> client_change_state_;
   rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::Empty>::SharedPtr update_pub_;
