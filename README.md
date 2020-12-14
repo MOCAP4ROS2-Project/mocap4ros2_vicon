@@ -77,7 +77,9 @@ e.g. `host_name` parameter.
           
      `ros2 lifecycle set shutdown`
 
-
+- Is important to do the "source" of the ROS2-Foxy workspace and the Vicon_ws before run one of this commands:
+    
+     `call local_setup.bat `  (Windows)
 
 
 # MOCAP4ROS2
