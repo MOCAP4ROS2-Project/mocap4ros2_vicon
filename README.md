@@ -6,7 +6,6 @@ This repository contains the drivers to run the mocap4ros2_project with vicon.
 
 **To use and compile this project is obligatory to download first the [mocap_msgs](https://github.com/MOCAP4ROS2-Project/mocap_msgs) repository in your workspace and follow the next instructions:**
 
-
 ## Vicon DataStream SDK
 
 Get the official binaries released in the official download page [here](https://www.vicon.com/software/datastream-sdk/?section=downloads).
@@ -52,6 +51,33 @@ e.g. `host_name` parameter.
 - Launch the Vicon-ROS2 driver launcher: `ros2 launch vicon2_driver vicon2.launch.py`
 
 - Check new topics where Vicon info is received in custom message format and TFs format.
+     - This driver has one publisher that publish the markers and other TransformBroadcaster that publish the TFs.
+
+- The vicon driver_node works to the frequency established by Vicon System.
+
+- The vicon2_driver is a lifecycle node that has this differents states, to know the different states you can run the next command in a terminal: 
+
+          ` 
+          ros2 lifecycle list vicon2_driver_node
+               - cleanup [2]
+                    Start: inactive
+                    Goal: cleaningup
+               - activate [3]
+                    Start: inactive
+                    Goal: activating
+               - shutdown [6]
+                    Start: inactive
+                    Goal: shuttingdown 
+          ` 
+- If you want to start the vicon2_driver you have to run in other terminal:
+          
+     `ros2 lifecycle set activate`
+
+- If you want to stop the vicon2_driver you have to run in other terminal:
+          
+     `ros2 lifecycle set shutdown`
+
+
 
 
 # MOCAP4ROS2
