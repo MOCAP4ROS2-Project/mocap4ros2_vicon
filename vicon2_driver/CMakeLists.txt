@@ -11,14 +11,14 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake/")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
-find_package(mocap4ros2_msgs REQUIRED)
+find_package(mocap_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 
 find_package(ViconDataStreamSDK_CPP REQUIRED)
@@ -28,7 +28,7 @@ set(dependencies
   rclcpp_lifecycle
   tf2
   tf2_ros
-  mocap4ros2_msgs
+  mocap_msgs
 )
 
 include_directories(

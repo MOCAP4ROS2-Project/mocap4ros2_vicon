@@ -5,7 +5,9 @@ find_library(
     NAMES ViconDataStreamSDK_CPP)
 
 find_path(LIBVICONDATASTREAM_SDK_INCLUDE_DIR
-  NAMES DataStreamClient.h)
+  NAMES DataStreamClient.h
+  PATHS /usr/local/include/ViconDataStreamSDK
+  )
 
 include(FindPackageHandleStandardArgs)
 
