@@ -21,7 +21,7 @@ find_package(tf2_ros REQUIRED)
 find_package(mocap_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 
-find_package(ViconDataStreamSDK_CPP REQUIRED)
+find_package(VICONDATASTREAMSDK_CPP REQUIRED)
 
 set(dependencies
   rclcpp
@@ -37,7 +37,7 @@ include_directories(
 )
 
 add_library(
-  ${PROJECT_NAME} 
+  ${PROJECT_NAME}
 src/vicon2_driver.cpp)
 
 ament_target_dependencies(${PROJECT_NAME} ${dependencies})
