@@ -27,6 +27,7 @@ using std::string;
 using std::map;
 using std::stringstream;
 
+// Transform the Vicon SDK enumerations to strings
 string Enum2String(const ViconDataStreamSDK::CPP::Direction::Enum i_Direction)
 {
   switch (i_Direction) {
@@ -47,6 +48,7 @@ string Enum2String(const ViconDataStreamSDK::CPP::Direction::Enum i_Direction)
   }
 }
 
+// Transform the Vicon SDK enumerations to strings
 string Enum2String(const ViconDataStreamSDK::CPP::Result::Enum i_result)
 {
   switch (i_result) {
@@ -95,6 +97,7 @@ string Enum2String(const ViconDataStreamSDK::CPP::Result::Enum i_result)
   }
 }
 
+// The vicon driver node has differents parameters to initialized with the vicon2_driver_params.yaml
 ViconDriverNode::ViconDriverNode(const rclcpp::NodeOptions node_options)
 : rclcpp_lifecycle::LifecycleNode("vicon2_driver_node", node_options)
 {
@@ -115,6 +118,7 @@ ViconDriverNode::ViconDriverNode(const rclcpp::NodeOptions node_options)
   declare_parameter<int>("qos_depth", 10);
 }
 
+// In charge of choose the different driver options related and provided by the Vicon SDK
 void ViconDriverNode::set_settings_vicon()
 {
   ViconDataStreamSDK::CPP::Result::Enum result(ViconDataStreamSDK::CPP::Result::Unknown);
@@ -167,6 +171,7 @@ void ViconDriverNode::set_settings_vicon()
   */
 }
 
+// Start the vicon_driver_node if the Vicon system is OK.
 void ViconDriverNode::start_vicon()
 {
   set_settings_vicon();
@@ -183,6 +188,7 @@ void ViconDriverNode::start_vicon()
   }
 }
 
+// Stop the vicon_driver_node if the lifecycle node state is shutdown.
 bool ViconDriverNode::stop_vicon()
 {
   RCLCPP_INFO(get_logger(), "Disconnecting from Vicon DataStream SDK");
@@ -191,6 +197,17 @@ bool ViconDriverNode::stop_vicon()
   return true;
 }
 
+// In charge of the transition of the lifecycle node
+void ViconDriverNode::control_start() {
+  trigger_transition(rclcpp_lifecycle::Transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE));
+}
+
+// In charge of the transition of the lifecycle node
+void ViconDriverNode::control_stop() {
+  trigger_transition(rclcpp_lifecycle::Transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE));
+}
+
+// In charge of get the Vicon information and convert it to vicon_msgs
 void ViconDriverNode::process_frame()
 {
   static rclcpp::Time lastTime;
@@ -223,6 +240,7 @@ void ViconDriverNode::process_frame()
   }
 }
 
+// Transform the information provided by the Vicon system into vicon_msgs and publish the information
 void ViconDriverNode::process_markers(const rclcpp::Time & frame_time, unsigned int vicon_frame_num)
 {
   int marker_cnt = 0;
@@ -289,6 +307,7 @@ void ViconDriverNode::process_markers(const rclcpp::Time & frame_time, unsigned 
   marker_pub_->publish(markers_msg);
 }
 
+// Transform and publish the information previously procesed by the process_markers and converted in ROS-TFs.
 void ViconDriverNode::marker_to_tf(
   mocap_msgs::msg::Marker marker,
   int marker_num, const rclcpp::Time & frame_time)
@@ -327,6 +346,8 @@ void ViconDriverNode::marker_to_tf(
 using CallbackReturnT =
   rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 
+
+// The next Callbacks are used to manage behavior in the different states of the lifecycle node.
 CallbackReturnT
 ViconDriverNode::on_configure(const rclcpp_lifecycle::State &)
 {
@@ -426,6 +447,7 @@ ViconDriverNode::on_error(const rclcpp_lifecycle::State &)
   return CallbackReturnT::SUCCESS;
 }
 
+// In charge of find and connect the driver with the Vicon SDK.
 bool ViconDriverNode::connect_vicon()
 {
   RCLCPP_WARN(
@@ -442,6 +464,7 @@ bool ViconDriverNode::connect_vicon()
   return client.IsConnected().Connected;
 }
 
+// Init the necessary parameters to use the Vicon SDK.
 void ViconDriverNode::initParameters()
 {
   get_parameter<std::string>("stream_mode", stream_mode_);

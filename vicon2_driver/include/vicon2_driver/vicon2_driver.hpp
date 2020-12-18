@@ -44,7 +44,10 @@
 
 #include "DataStreamClient.h"
 
-class ViconDriverNode : public rclcpp_lifecycle::LifecycleNode
+#include "mocap_control/ControlledLifecycleNode.hpp"
+
+
+class ViconDriverNode : public rclcpp_lifecycle::LifecycleNode, public mocap_control::ControlledLifecycleNode
 {
 public:
   explicit ViconDriverNode(
@@ -99,6 +102,10 @@ protected:
   void marker_to_tf(
     mocap_msgs::msg::Marker marker,
     int marker_num, const rclcpp::Time & frame_time);
+
+  void control_start() override;
+  void control_stop() override;
+
   std::shared_ptr<rclcpp::Client<lifecycle_msgs::srv::ChangeState>> client_change_state_;
   rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::Empty>::SharedPtr update_pub_;
 };
