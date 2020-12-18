@@ -29,9 +29,6 @@
 
 #include "mocap_msgs/msg/marker.hpp"
 #include "mocap_msgs/msg/markers.hpp"
-//#include "mocap_msgs/srv/vicon_calib_seg.hpp"
-//#include "mocap_msgs/srv/vicon_grab_pose.hpp"
-
 #include "std_msgs/msg/empty.hpp"
 
 #include "rclcpp/rclcpp.hpp"

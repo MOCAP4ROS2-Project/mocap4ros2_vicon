@@ -84,7 +84,8 @@ TEST(UtilsTest, test_vicon2_params)
   exe.add_node(vicon2_node->get_node_base_interface());
   exe.add_node(test_node->get_node_base_interface());
 
-  auto set_parameters_results = vicon2_node->set_parameters({
+  auto set_parameters_results = vicon2_node->set_parameters(
+  {
     rclcpp::Parameter("stream_mode", "ServerPush"),
     rclcpp::Parameter("host_name", "123.456.789:123"),
     rclcpp::Parameter("tf_ref_frame_id", "my_world"),
@@ -102,14 +103,14 @@ TEST(UtilsTest, test_vicon2_params)
     rclcpp::Parameter("qos_depth", 6),
   });
 
-  vicon2_node->trigger_transition(rclcpp_lifecycle::Transition(
-      Transition::TRANSITION_CONFIGURE));
+  vicon2_node->trigger_transition(
+    rclcpp_lifecycle::Transition(Transition::TRANSITION_CONFIGURE));
   exe.spin_some();
 
   EXPECT_EQ(State::PRIMARY_STATE_INACTIVE, vicon2_node->get_current_state().id());
 
-  vicon2_node->trigger_transition(rclcpp_lifecycle::Transition(
-      Transition::TRANSITION_ACTIVATE));
+  vicon2_node->trigger_transition(
+    rclcpp_lifecycle::Transition(Transition::TRANSITION_ACTIVATE));
 
   ASSERT_EQ(vicon2_node->ref_stream_mode_, "ServerPush");
   ASSERT_EQ(vicon2_node->ref_host_name_, "123.456.789:123");

@@ -349,7 +349,7 @@ using CallbackReturnT =
 
 // The next Callbacks are used to manage behavior in the different states of the lifecycle node.
 CallbackReturnT
-ViconDriverNode::on_configure(const rclcpp_lifecycle::State & state)
+ViconDriverNode::on_configure(const rclcpp_lifecycle::State &)
 {
   initParameters();
 
@@ -392,7 +392,7 @@ ViconDriverNode::on_configure(const rclcpp_lifecycle::State & state)
 }
 
 CallbackReturnT
-ViconDriverNode::on_activate(const rclcpp_lifecycle::State & state)
+ViconDriverNode::on_activate(const rclcpp_lifecycle::State &)
 {
   RCLCPP_INFO(get_logger(), "State id [%d]", get_current_state().id());
   RCLCPP_INFO(get_logger(), "State label [%s]", get_current_state().label().c_str());
@@ -405,7 +405,7 @@ ViconDriverNode::on_activate(const rclcpp_lifecycle::State & state)
 }
 
 CallbackReturnT
-ViconDriverNode::on_deactivate(const rclcpp_lifecycle::State & state)
+ViconDriverNode::on_deactivate(const rclcpp_lifecycle::State &)
 {
   RCLCPP_INFO(get_logger(), "State id [%d]", get_current_state().id());
   RCLCPP_INFO(get_logger(), "State label [%s]", get_current_state().label().c_str());
@@ -417,7 +417,7 @@ ViconDriverNode::on_deactivate(const rclcpp_lifecycle::State & state)
 }
 
 CallbackReturnT
-ViconDriverNode::on_cleanup(const rclcpp_lifecycle::State & state)
+ViconDriverNode::on_cleanup(const rclcpp_lifecycle::State &)
 {
   RCLCPP_INFO(get_logger(), "State id [%d]", get_current_state().id());
   RCLCPP_INFO(get_logger(), "State label [%s]", get_current_state().label().c_str());
@@ -428,7 +428,7 @@ ViconDriverNode::on_cleanup(const rclcpp_lifecycle::State & state)
 }
 
 CallbackReturnT
-ViconDriverNode::on_shutdown(const rclcpp_lifecycle::State & state)
+ViconDriverNode::on_shutdown(const rclcpp_lifecycle::State &)
 {
   RCLCPP_INFO(get_logger(), "State id [%d]", get_current_state().id());
   RCLCPP_INFO(get_logger(), "State label [%s]", get_current_state().label().c_str());
@@ -439,7 +439,7 @@ ViconDriverNode::on_shutdown(const rclcpp_lifecycle::State & state)
 }
 
 CallbackReturnT
-ViconDriverNode::on_error(const rclcpp_lifecycle::State & state)
+ViconDriverNode::on_error(const rclcpp_lifecycle::State &)
 {
   RCLCPP_INFO(get_logger(), "State id [%d]", get_current_state().id());
   RCLCPP_INFO(get_logger(), "State label [%s]", get_current_state().label().c_str());
