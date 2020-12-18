@@ -197,6 +197,16 @@ bool ViconDriverNode::stop_vicon()
   return true;
 }
 
+// In charge of the transition of the lifecycle node
+void ViconDriverNode::control_start() {
+  trigger_transition(rclcpp_lifecycle::Transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE));
+}
+
+// In charge of the transition of the lifecycle node
+void ViconDriverNode::control_stop() {
+  trigger_transition(rclcpp_lifecycle::Transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE));
+}
+
 // In charge of get the Vicon information and convert it to vicon_msgs
 void ViconDriverNode::process_frame()
 {
