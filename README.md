@@ -71,11 +71,11 @@ e.g. `host_name` parameter.
           ` 
 - If you want to start the vicon2_driver you have to run in other terminal:
           
-     `ros2 lifecycle set activate`
+     `ros2 lifecycle set vicon2_driver_node activate`
 
 - If you want to stop the vicon2_driver you have to run in other terminal:
           
-     `ros2 lifecycle set shutdown`
+     `ros2 lifecycle set vicon2_driver_node shutdown`
 
 - Is important to do the "source" of the ROS2-Foxy workspace and the Vicon_ws before run one of this commands:
     
