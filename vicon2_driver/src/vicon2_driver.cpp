@@ -99,7 +99,7 @@ string Enum2String(const ViconDataStreamSDK::CPP::Result::Enum i_result)
 
 // The vicon driver node has differents parameters to initialized with the vicon2_driver_params.yaml
 ViconDriverNode::ViconDriverNode(const rclcpp::NodeOptions node_options)
-: rclcpp_lifecycle::LifecycleNode("vicon2_driver_node", node_options)
+: ControlledLifecycleNode("vicon2_driver_node", node_options)
 {
   declare_parameter<std::string>("stream_mode", "ClientPull");
   declare_parameter<std::string>("host_name", "192.168.10.1:801");
@@ -198,12 +198,12 @@ bool ViconDriverNode::stop_vicon()
 }
 
 // In charge of the transition of the lifecycle node
-void ViconDriverNode::control_start() {
+void ViconDriverNode::control_start(const device_control_msgs::msg::Control::SharedPtr msg) {
   trigger_transition(rclcpp_lifecycle::Transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE));
 }
 
 // In charge of the transition of the lifecycle node
-void ViconDriverNode::control_stop() {
+void ViconDriverNode::control_stop(const device_control_msgs::msg::Control::SharedPtr msg) {
   trigger_transition(rclcpp_lifecycle::Transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE));
 }
 
