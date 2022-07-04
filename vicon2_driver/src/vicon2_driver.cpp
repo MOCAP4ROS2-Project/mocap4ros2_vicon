@@ -198,12 +198,12 @@ bool ViconDriverNode::stop_vicon()
 }
 
 // In charge of the transition of the lifecycle node
-void ViconDriverNode::control_start(const device_control_msgs::msg::Control::SharedPtr msg) {
+void ViconDriverNode::control_start(const mocap_control_msgs::msg::Control::SharedPtr msg) {
   trigger_transition(rclcpp_lifecycle::Transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE));
 }
 
 // In charge of the transition of the lifecycle node
-void ViconDriverNode::control_stop(const device_control_msgs::msg::Control::SharedPtr msg) {
+void ViconDriverNode::control_stop(const mocap_control_msgs::msg::Control::SharedPtr msg) {
   trigger_transition(rclcpp_lifecycle::Transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE));
 }
 

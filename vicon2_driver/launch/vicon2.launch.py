@@ -34,16 +34,17 @@ def generate_launch_description():
       'vicon2_driver'), 'config', 'vicon2_driver_params.yaml')
 
     stdout_linebuf_envvar = SetEnvironmentVariable(
-        'RCUTILS_CONSOLE_STDOUT_LINE_BUFFERED', '1')
+        'RCUTILS_LOGGING_BUFFERED_STREAM', '1')
 
     # print('')
     # print('params_file_path: ', params_file_path)
     # print('')
 
     driver_node = LifecycleNode(
-        node_name='vicon2_driver_node',
+        name='vicon2_driver_node',
+        namespace='',
         package='vicon2_driver',
-        node_executable='vicon2_driver_main',
+        executable='vicon2_driver_main',
         output='screen',
         parameters=[params_file_path],
     )
