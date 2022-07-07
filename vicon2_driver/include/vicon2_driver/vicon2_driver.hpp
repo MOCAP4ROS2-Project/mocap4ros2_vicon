@@ -30,6 +30,11 @@
 #include "mocap_msgs/msg/marker.hpp"
 #include "mocap_msgs/msg/markers.hpp"
 #include "std_msgs/msg/empty.hpp"
+#include <geometry_msgs/msg/pose.hpp>
+#include <geometry_msgs/msg/pose_array.hpp>
+#include <pcl_conversions/pcl_conversions.h>
+#include <sensor_msgs/msg/point_cloud2.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp/node_interfaces/node_logging.hpp"
@@ -41,8 +46,9 @@
 
 #include "tf2/buffer_core.h"
 #include "tf2_ros/transform_broadcaster.h"
+#include <sensor_msgs/msg/point_cloud2.hpp>
 
-#include "DataStreamClient.h"
+#include "ViconDataStreamSDK_CPP/DataStreamClient.h"
 
 #include "mocap_control/ControlledLifecycleNode.hpp"
 
@@ -74,12 +80,12 @@ public:
 
 protected:
   ViconDataStreamSDK::CPP::Client client;
-  // rclcpp::Node::SharedPtr vicon_node;
-  // std::shared_ptr<rclcpp::SyncParametersClient> parameters_client;
-  rclcpp::Time now_time;
+  rclcpp::Time now_time_;
+  rclcpp::TimerBase::SharedPtr vicon_timer_;
   std::string myParam;
-  // rclcpp::Publisher<mocap4ros_msgs::msg::Markers>::SharedPtr marker_pub_;
   rclcpp_lifecycle::LifecyclePublisher<mocap_msgs::msg::Markers>::SharedPtr marker_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::PointCloud2>::SharedPtr marker_pcl2_publisher_;
+
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
   std::string stream_mode_;
   std::string host_name_;
@@ -98,6 +104,7 @@ protected:
   int qos_depth_;
 
   void process_frame();
+  void frame_callback();
   void process_markers(const rclcpp::Time & frame_time, unsigned int vicon_frame_num);
   void marker_to_tf(
     mocap_msgs::msg::Marker marker,

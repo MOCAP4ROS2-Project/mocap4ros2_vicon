@@ -21,8 +21,13 @@ find_package(tf2_ros REQUIRED)
 find_package(mocap_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(mocap_control REQUIRED)
+find_package(pcl_conversions REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 
-find_package(VICONDATASTREAMSDK_CPP REQUIRED)
+find_package(PCL COMPONENTS common REQUIRED)
+
+# Used by Vicon SDK. Now we dont copy boost binaries shipped with driver.
+find_package(Boost REQUIRED COMPONENTS thread date_time)
 
 set(dependencies
   rclcpp
@@ -31,12 +36,21 @@ set(dependencies
   tf2_ros
   mocap_msgs
   mocap_control
+  pcl_conversions
+  geometry_msgs
+  tf2_geometry_msgs
 )
 
 include_directories(
   include
-  ${LIBVICONDATASTREAM_SDK_INCLUDE_DIR}
+  vicon_sdk/DataStream  # For Vicon SDK
+  vicon_sdk             # For StreamCommon, required by ViconSDK  
 )
+
+# Compile Vicon SDK from scratch to avoid Boost version mismatch clashes
+file(GLOB_RECURSE vicon_sdk_files "${CMAKE_CURRENT_SOURCE_DIR}/vicon_sdk/**/**.cpp")
+add_library(vicon_sdk ${vicon_sdk_files})
+target_link_libraries(vicon_sdk PUBLIC ${Boost_LIBRARIES})
 
 add_library(
   ${PROJECT_NAME}
@@ -52,11 +66,15 @@ add_executable(vicon2_driver_main
 ament_target_dependencies(vicon2_driver_main ${dependencies})
 target_link_libraries(vicon2_driver_main
   ${PROJECT_NAME}
-  ${LIBVICONDATASTREAM_SDK_LIBRARY}
+  ${PCL_LIBRARIES}
+  vicon_sdk
 )
 
 ament_target_dependencies(vicon2_driver ${dependencies})
-target_link_libraries(vicon2_driver ${LIBVICONDATASTREAM_SDK_LIBRARY})
+target_link_libraries(vicon2_driver 
+  ${PCL_LIBRARIES}
+  vicon_sdk
+  )
 
 install(DIRECTORY include/
   DESTINATION include/
@@ -74,7 +92,7 @@ install(TARGETS
 )
 
 install(TARGETS
-  ${PROJECT_NAME}
+  ${PROJECT_NAME} vicon_sdk
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
