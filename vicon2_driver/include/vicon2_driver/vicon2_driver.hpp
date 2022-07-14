@@ -25,27 +25,30 @@
 #include <chrono>
 #include <vector>
 
-#include "rclcpp/time.hpp"
-
-#include "mocap_msgs/msg/marker.hpp"
-#include "mocap_msgs/msg/markers.hpp"
-#include "std_msgs/msg/empty.hpp"
+#include "ViconDataStreamSDK_CPP/DataStreamClient.h"
 
 #include "rclcpp/rclcpp.hpp"
+#include "rclcpp/time.hpp"
+#include "tf2/buffer_core.h"
+#include "tf2_ros/transform_broadcaster.h"
+#include "mocap_control/ControlledLifecycleNode.hpp"
 #include "rclcpp/node_interfaces/node_logging.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
+
+#include "std_msgs/msg/empty.hpp"
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
 #include "lifecycle_msgs/srv/change_state.hpp"
 #include "lifecycle_msgs/srv/get_state.hpp"
+#include "mocap_msgs/msg/marker.hpp"
+#include "mocap_msgs/msg/markers.hpp"
 
-#include "tf2/buffer_core.h"
-#include "tf2_ros/transform_broadcaster.h"
-
-#include "DataStreamClient.h"
-
-#include "mocap_control/ControlledLifecycleNode.hpp"
-
+using std::min;
+using std::max;
+using std::string;
+using std::map;
+using std::stringstream;
+using namespace ViconDataStreamSDK::CPP;
 
 class ViconDriverNode : public mocap_control::ControlledLifecycleNode
 {
@@ -76,7 +79,7 @@ protected:
   ViconDataStreamSDK::CPP::Client client;
   // rclcpp::Node::SharedPtr vicon_node;
   // std::shared_ptr<rclcpp::SyncParametersClient> parameters_client;
-  rclcpp::Time now_time;
+  rclcpp::Time now_time_;
   std::string myParam;
   // rclcpp::Publisher<mocap4ros_msgs::msg::Markers>::SharedPtr marker_pub_;
   rclcpp_lifecycle::LifecyclePublisher<mocap_msgs::msg::Markers>::SharedPtr marker_pub_;

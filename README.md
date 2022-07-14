@@ -18,34 +18,16 @@ You can check the documentation [here](https://docs.vicon.com/spaces/viewspace.a
 
 ### Installing on Linux (version 1.11.0)
 
-Uncompress the official binaries and then uncompress the corresponding linux binaries:
+Uncompress the official binaries and then uncompress the corresponding linux drivers and sources:
 ```bash
 cd ~/Downloads
 unzip ViconDataStreamSDK_1.11.0_128037.zip
 unzip ViconDataStreamSDK_1.11.0.128037h__Linux64.zip
-```
-
-Copy all the libraries to `/usr/local/lib/`:
-```bash
 cd ~/Downloads/Linux64
-sudo mv lib* /usr/local/lib/
-```
-
-And move the headers to `/usr/local/include/ViconDataStreamSDK/`.
-```bash
-cd ~/Downloads/Linux64
-sudo mkdir /usr/local/include/ViconDataStreamSDK/
-sudo mv *.h /usr/local/include/ViconDataStreamSDK/
-```
-
-Update the `LD_LIBRARY_PATH` environment variable:
-```bash
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib/
-```
-
-Finally, it's convenient to automatically update this environment variable in your bash session every time a new shell is launched, so type it into your `.bashrc` file:
-```bash
-echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib/" >> ~/.bashrc 
+sudo aptitude install p7zip-full
+mkdir ~/Downloads/Linux64/sources
+cd sources
+7za x ../ViconDataStreamSDKSourceLinux64-source.7z 
 ```
 
 ### Installing on Windows
@@ -73,7 +55,26 @@ git clone https://github.com/MOCAP4ROS2-Project/mocap.git
 git clone https://github.com/MOCAP4ROS2-Project/mocap4ros2_vicon.git
 ```
 
-Then we install any missing dependency:
+Next, we move Vicon SDK sources (and cpp test) to our repo:
+```bash
+cd ~/workspace/mocap/src/mocap4ros2_vicon/vicon2_driver
+mkdir vicon_sdk
+cd vicon_sdk
+cp -rf ~/Downloads/Linux64/sources/Vicon/CrossMarket/DataStream .
+cp -rf ~/Downloads/Linux64/sources/Vicon/CrossMarket/StreamCommon .
+cp ~/Downloads/Linux64/ViconDataStreamSDK_CPPTest.cpp ~/workspace/mocap/src/mocap4ros2_vicon/vicon2_driver/src/ViconDataStreamSDK_CPPTest.cpp
+cd ~/workspace/mocap/src/mocap4ros2_vicon/vicon2_driver/vicon_sdk/DataStream/
+rm -rf *Test
+rm -rf ~/Downloads/Linux64
+rm -rf ~/Downloads/ViconDataStreamSDK_1.11.0.*
+```
+
+We need to change one include line in `ViconDataStreamSDK_CPPTest.cpp` in order to find the header in our package:
+```bash
+#include "ViconDataStreamSDK_CPP/DataStreamClient.h"
+```
+
+Now, we install any missing dependency:
 ```bash
 cd ~/workspace/mocap/src
 rosdep install --from-paths . --ignore-src --rosdistro humble -r -y 
