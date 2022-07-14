@@ -21,10 +21,7 @@ find_package(tf2_ros REQUIRED)
 find_package(mocap_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(mocap_control REQUIRED)
-find_package(pcl_conversions REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
-
-find_package(PCL COMPONENTS common REQUIRED)
 
 # Used by Vicon SDK. Now we dont copy boost binaries shipped with driver.
 find_package(Boost REQUIRED COMPONENTS thread date_time)
@@ -36,7 +33,6 @@ set(dependencies
   tf2_ros
   mocap_msgs
   mocap_control
-  pcl_conversions
   geometry_msgs
   tf2_geometry_msgs
 )
@@ -66,7 +62,6 @@ add_executable(vicon2_driver_main
 ament_target_dependencies(vicon2_driver_main ${dependencies})
 target_link_libraries(vicon2_driver_main
   ${PROJECT_NAME}
-  ${PCL_LIBRARIES}
   vicon_sdk
 )
 
@@ -76,13 +71,11 @@ add_executable(ViconDataStreamSDK_CPPTest
 ament_target_dependencies(ViconDataStreamSDK_CPPTest ${dependencies})
 target_link_libraries(ViconDataStreamSDK_CPPTest
   ${PROJECT_NAME}
-  ${PCL_LIBRARIES}
   vicon_sdk
 )
 
 ament_target_dependencies(vicon2_driver ${dependencies})
 target_link_libraries(vicon2_driver 
-  ${PCL_LIBRARIES}
   vicon_sdk
   )
 
