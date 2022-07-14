@@ -73,6 +73,7 @@ public:
   void set_settings_vicon();
   void start_vicon();
   bool stop_vicon();
+  int getMarkerIndex(std::string marker_name);
   void initParameters();
 
 protected:
@@ -96,15 +97,19 @@ protected:
   int droppedFrameCount_;
   int n_markers_;
   int n_unlabeled_markers_;
+  // unlabelled markers will get an unique number on detection
+  int unlabeled_counter_;
   std::string qos_history_policy_;
   std::string qos_reliability_policy_;
+  std::map<std::string, int> markers_list_;
+  
   int qos_depth_;
 
   void process_frame();
   void process_markers(const rclcpp::Time & frame_time, unsigned int vicon_frame_num);
   void marker_to_tf(
     mocap_msgs::msg::Marker marker,
-    int marker_num, const rclcpp::Time & frame_time);
+    int marker_num, const rclcpp::Time & frame_time, std::string marker_name);
 
   void control_start(const mocap_control_msgs::msg::Control::SharedPtr msg) override;
   void control_stop(const mocap_control_msgs::msg::Control::SharedPtr msg) override;
