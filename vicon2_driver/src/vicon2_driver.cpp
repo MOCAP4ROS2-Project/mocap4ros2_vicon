@@ -14,23 +14,10 @@
 //
 // Author: David Vargas Frutos <david.vargas@urjc.es>
 
-#include <string>
-#include <vector>
-#include <memory>
-
 #include "vicon2_driver/vicon2_driver.hpp"
-#include "lifecycle_msgs/msg/state.hpp"
-
-using std::min;
-using std::max;
-using std::string;
-using std::map;
-using std::stringstream;
-using namespace std::chrono_literals;
-using namespace ViconDataStreamSDK::CPP;
 
 // Transform the Vicon SDK enumerations to strings
-string Enum2String(const Direction::Enum i_Direction)
+std::string Enum2String(const ViconDataStreamSDK::CPP::Direction::Enum i_Direction)
 {
   switch (i_Direction) {
     case Direction::Forward:
@@ -51,14 +38,14 @@ string Enum2String(const Direction::Enum i_Direction)
 }
 
 // Transform the Vicon SDK enumerations to strings
-string Enum2String(const Result::Enum i_result)
+std::string Enum2String(const ViconDataStreamSDK::CPP::Result::Enum i_result)
 {
   switch (i_result) {
     case Result::ClientAlreadyConnected:
       return "ClientAlreadyConnected";
-    case Result::ClientConnectionFailed:
-      return "";
-    case Result::CoLinearAxes:
+    case ViconDataStreamSDK::CPP::Result::ClientConnectionFailed:
+      return "ClientConnectionFailed";
+    case ViconDataStreamSDK::CPP::Result::CoLinearAxes:
       return "CoLinearAxes";
     case Result::InvalidDeviceName:
       return "InvalidDeviceName";
@@ -164,28 +151,22 @@ void ViconDriverNode::set_settings_vicon()
     _Output_GetVersion.Point
   );
 
-  /*
-  if (publish_markers_) {
-    marker_pub_ = create_publisher<mocap4ros_msgs::msg::Markers>(
-      tracked_frame_suffix_ + "/markers", 100);
-    RCLCPP_WARN(get_logger(), "publish_markers_ configured!!!");
-  }
-  */
+  unlabeled_counter_ = 0;
+
 }
 
 // Start the vicon_driver_node if the Vicon system is OK.
 void ViconDriverNode::start_vicon()
 {
   set_settings_vicon();
-  vicon_timer_ = create_wall_timer(100ms, std::bind(&ViconDriverNode::frame_callback, this));
-}
-
-void ViconDriverNode::frame_callback()
-{  
-  if (rclcpp::ok()) {
-    // repeat till get a valid frame
-    while (client.GetFrame().Result != Result::Success && rclcpp::ok()) {
-      RCLCPP_WARN(get_logger(), "getFrame returned false");      
+  auto period = std::chrono::milliseconds(100);
+  rclcpp::Rate d(period);
+  while (rclcpp::ok()) {
+    ViconDataStreamSDK::CPP::Output_GetFrame ans = client.GetFrame();
+    while (ans.Result != ViconDataStreamSDK::CPP::Result::Success) {
+      RCLCPP_WARN(get_logger(), "getFrame returned [%s]", Enum2String(ans.Result).c_str());
+      d.sleep();
+      ans = client.GetFrame();
     }
     now_time_ = this->now();
     process_frame();
@@ -202,13 +183,21 @@ bool ViconDriverNode::stop_vicon()
 }
 
 // In charge of the transition of the lifecycle node
-void ViconDriverNode::control_start(const mocap_control_msgs::msg::Control::SharedPtr msg) {
-  trigger_transition(rclcpp_lifecycle::Transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE));
+void ViconDriverNode::control_start(const mocap_control_msgs::msg::Control::SharedPtr msg)
+{
+  trigger_transition(
+    rclcpp_lifecycle::Transition(
+      lifecycle_msgs::msg::Transition::
+      TRANSITION_ACTIVATE));
 }
 
 // In charge of the transition of the lifecycle node
-void ViconDriverNode::control_stop(const mocap_control_msgs::msg::Control::SharedPtr msg) {
-  trigger_transition(rclcpp_lifecycle::Transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE));
+void ViconDriverNode::control_stop(const mocap_control_msgs::msg::Control::SharedPtr msg)
+{
+  trigger_transition(
+    rclcpp_lifecycle::Transition(
+      lifecycle_msgs::msg::Transition::
+      TRANSITION_ACTIVATE));
 }
 
 // In charge of get the Vicon information and convert it to vicon_msgs
@@ -256,6 +245,7 @@ void ViconDriverNode::process_markers(const rclcpp::Time & frame_time, unsigned 
       get_logger(), "IsMarkerDataEnabled? %s",
       client.IsMarkerDataEnabled().Enabled ? "true" : "false");
   }
+
   if (!unlabeled_marker_data_enabled_) {
     unlabeled_marker_data_enabled_ = true;
     client.EnableUnlabeledMarkerData();
@@ -264,6 +254,7 @@ void ViconDriverNode::process_markers(const rclcpp::Time & frame_time, unsigned 
       get_logger(), "IsUnlabeledMarkerDataEnabled? %s",
       client.IsUnlabeledMarkerDataEnabled().Enabled ? "true" : "false");
   }
+
   n_markers_ = 0;
   mocap_msgs::msg::Markers markers_msg;
   markers_msg.header.stamp = frame_time;
@@ -271,129 +262,105 @@ void ViconDriverNode::process_markers(const rclcpp::Time & frame_time, unsigned 
 
   // Count the number of subjects
   unsigned int SubjectCount = client.GetSubjectCount().SubjectCount;
-  // Get labeled markers
-  for (unsigned int SubjectIndex = 0; SubjectIndex < SubjectCount; ++SubjectIndex)
-  {
-    std::string this_subject_name = client.GetSubjectName(SubjectIndex).SubjectName;
-    // Count the number of markers
-    unsigned int num_subject_markers = client.GetMarkerCount(this_subject_name).MarkerCount;
-    n_markers_ += num_subject_markers;
-    //std::cout << "    Markers (" << MarkerCount << "):" << std::endl;
-    for (unsigned int MarkerIndex = 0; MarkerIndex < num_subject_markers; ++MarkerIndex)
-    {
-      mocap_msgs::msg::Marker this_marker;
-      this_marker.marker_name = client.GetMarkerName(this_subject_name, MarkerIndex).MarkerName;
-      this_marker.subject_name = this_subject_name;
-      this_marker.segment_name
-          = client.GetMarkerParentName(this_subject_name, this_marker.marker_name).SegmentName;
-      // Get the global marker translation
-      Output_GetMarkerGlobalTranslation _Output_GetMarkerGlobalTranslation =
-          client.GetMarkerGlobalTranslation(this_subject_name, this_marker.marker_name);
-      this_marker.translation.x = _Output_GetMarkerGlobalTranslation.Translation[0];
-      this_marker.translation.y = _Output_GetMarkerGlobalTranslation.Translation[1];
-      this_marker.translation.z = _Output_GetMarkerGlobalTranslation.Translation[2];
-      this_marker.occluded = _Output_GetMarkerGlobalTranslation.Occluded;
-      markers_msg.markers.push_back(this_marker);
-      marker_to_tf(this_marker, marker_cnt, frame_time);
-      marker_cnt++;
+  RCLCPP_DEBUG(get_logger(), "Subjects: (%u)", SubjectCount);
+  for (unsigned int SubjectIndex = 0; SubjectIndex < SubjectCount; ++SubjectIndex) {
+    // Get the subject name
+    std::string SubjectName = client.GetSubjectName(SubjectIndex).SubjectName;
+    unsigned int MarkerCount = client.GetMarkerCount(SubjectName).MarkerCount;
+    RCLCPP_DEBUG(get_logger(), "# Markers: %d", MarkerCount);
+
+    n_markers_ += MarkerCount;
+    // n_unlabeled_markers_ = MarkerCount;
+    for (unsigned int MarkerIndex = 0; MarkerIndex < MarkerCount; ++MarkerIndex) {
+      // Get the marker name
+      std::string MarkerName = client.GetMarkerName(SubjectName, MarkerIndex).MarkerName;
+      // Get the global marker translationSegmentPublisher
+      ViconDataStreamSDK::CPP::Output_GetMarkerGlobalTranslation
+        _Output_GetMarkerGlobalTranslation =
+        client.GetMarkerGlobalTranslation(SubjectName, MarkerName);
+
+      if (_Output_GetMarkerGlobalTranslation.Result == ViconDataStreamSDK::CPP::Result::Success) {
+        mocap_msgs::msg::Marker this_marker;
+        this_marker.translation.x = _Output_GetMarkerGlobalTranslation.Translation[0];
+        this_marker.translation.y = _Output_GetMarkerGlobalTranslation.Translation[1];
+        this_marker.translation.z = _Output_GetMarkerGlobalTranslation.Translation[2];
+
+        this_marker.index = getMarkerIndex(MarkerName);
+        markers_msg.markers.push_back(this_marker);
+
+        marker_to_tf(this_marker, marker_cnt, frame_time, MarkerName);
+        marker_cnt++;
+      } else {
+        RCLCPP_WARN(
+          get_logger(),
+          "GetUnlabeledMarkerGlobalTranslation failed (result = %s)",
+          Enum2String(_Output_GetMarkerGlobalTranslation.Result).c_str());
+      }
     }
-  }
 
-  unsigned int UnlabeledMarkerCount = client.GetUnlabeledMarkerCount().MarkerCount;
-
-  RCLCPP_INFO(
-    get_logger(),
-    "# unlabeled markers: %d", UnlabeledMarkerCount);
-  n_markers_ += UnlabeledMarkerCount;
-  n_unlabeled_markers_ = UnlabeledMarkerCount;
-
-
-  pcl::PointCloud<pcl::PointXYZRGB> markers_cloud;
-
-  geometry_msgs::msg::PoseArray marker_poses;
-  marker_poses.header.frame_id = tf_ref_frame_id_;
-  marker_poses.header.stamp = frame_time;
-  
-  for (unsigned int UnlabeledMarkerIndex = 0;
-    UnlabeledMarkerIndex < UnlabeledMarkerCount;
-    ++UnlabeledMarkerIndex)
-  {
-    // Get the global marker translationSegmentPublisher
-    Output_GetUnlabeledMarkerGlobalTranslation
-      _Output_GetUnlabeledMarkerGlobalTranslation =
-      client.GetUnlabeledMarkerGlobalTranslation(UnlabeledMarkerIndex);
-
-    if (_Output_GetUnlabeledMarkerGlobalTranslation.Result ==
-      Result::Success)
-    {
-      mocap_msgs::msg::Marker this_marker;
-      this_marker.translation.x = _Output_GetUnlabeledMarkerGlobalTranslation.Translation[0];
-      this_marker.translation.y = _Output_GetUnlabeledMarkerGlobalTranslation.Translation[1];
-      this_marker.translation.z = _Output_GetUnlabeledMarkerGlobalTranslation.Translation[2];
-           
-      pcl::PointXYZRGB pt;
-      pt = pcl::PointXYZRGB(1.0f, 0.2f, 0.0f);
-      pt.x = this_marker.translation.x/1000.0;;
-      pt.y = this_marker.translation.y/1000.0;
-      pt.z = this_marker.translation.z/1000.0;
-      markers_cloud.points.push_back(pt);
-
-      // this_marker.occluded = false;
-      markers_msg.markers.push_back(this_marker);
-
-      marker_to_tf(this_marker, marker_cnt, frame_time);
-      marker_cnt++;
-    } else {
+    if (!marker_pub_->is_activated()) {
       RCLCPP_WARN(
         get_logger(),
-        "GetUnlabeledMarkerGlobalTranslation failed (result = %s)",
-        Enum2String(_Output_GetUnlabeledMarkerGlobalTranslation.Result).c_str());
+        "Lifecycle publisher is currently inactive. Messages are not published.");
     }
+    marker_pub_->publish(markers_msg);
   }
-  if (!marker_pub_->is_activated()) {
-    RCLCPP_WARN(
-      get_logger(),
-      "Lifecycle publisher is currently inactive. Messages are not published.");
-  }
-  marker_pub_->publish(markers_msg);
+}
 
-  auto pc2_msg_ = std::make_shared<sensor_msgs::msg::PointCloud2>();
-  pcl::toROSMsg(markers_cloud, *pc2_msg_);
-  pc2_msg_->header.frame_id = tf_ref_frame_id_;
-  pc2_msg_->header.stamp = now();
-  marker_pcl2_publisher_->publish(*pc2_msg_);
-  
+//
+int ViconDriverNode::getMarkerIndex(const std::string & marker_name)
+{
+  int ans;
+
+  // unlabelled markers will get an unique number
+  if (marker_name.size() == 0) {
+    ans = unlabeled_counter_++;
+  } else {
+
+    auto search = markers_list_.find(marker_name);
+    if (search != markers_list_.end()) {
+      ans = search->second;
+    } else {
+      ans = markers_list_.size();
+      markers_list_.insert({marker_name, ans});
+    }
+
+  }
+  return ans;
 }
 
 // Transform and publish the information previously procesed by the process_markers and converted in ROS-TFs.
 void ViconDriverNode::marker_to_tf(
   mocap_msgs::msg::Marker marker,
-  int marker_num, const rclcpp::Time & frame_time)
+  int marker_num, const rclcpp::Time & frame_time, const std::string & marker_name)
 {
   tf2::Transform transform;
   std::vector<geometry_msgs::msg::TransformStamped> transforms;
-  string tracked_frame;
+  std::string tracked_frame;
   geometry_msgs::msg::TransformStamped tf_msg;
+
+  // occluded markers are reported at 0,0,0
+  if ( (marker.translation.x ==
+    0.0) & (marker.translation.y == 0.0) & (marker.translation.z == 0.0) )
+  {
+    return;
+  }
+
 
   transform.setOrigin(
     tf2::Vector3(
       marker.translation.x / 1000,
       marker.translation.y / 1000,
       marker.translation.z / 1000));
-
   transform.setRotation(tf2::Quaternion(0, 0, 0, 1));
-  stringstream marker_num_str;
-  marker_num_str << marker_num;
 
-  if (marker.marker_name.size()==0){
+  std::stringstream marker_num_str;
+  marker_num_str << marker_num;
+  if (marker_name.size() == 0) {
     tracked_frame = tracked_frame_suffix_ + "/marker_tf_" + marker_num_str.str();
-  } else{
-    tracked_frame = marker.marker_name;
+  } else {
+    tracked_frame = tracked_frame_suffix_ + "/" + marker_name;
   }
-  RCLCPP_WARN(
-        get_logger(),
-        "new tf at (%s:%s)",
-        tracked_frame.c_str(),marker.occluded? "occluded": "not occluded" );
 
   tf_msg.header.stamp = frame_time;
   tf_msg.header.frame_id = tf_ref_frame_id_;
@@ -533,11 +500,12 @@ bool ViconDriverNode::connect_vicon()
     get_logger(),
     "Trying to connect to Vicon DataStream SDK at %s ...", host_name_.c_str());
 
-  if (client.Connect(host_name_).Result == Result::Success) {
+  auto stat = client.Connect(host_name_).Result;
+  if (stat == ViconDataStreamSDK::CPP::Result::Success) {
     RCLCPP_INFO(get_logger(), "... connected!");
     start_vicon();
   } else {
-    RCLCPP_INFO(get_logger(), "... not connected :( ");
+    RCLCPP_INFO(get_logger(), "... not connected :(  [%s]", Enum2String(stat).c_str());
   }
 
   return client.IsConnected().Connected;

@@ -55,20 +55,26 @@ git clone https://github.com/MOCAP4ROS2-Project/mocap.git
 git clone https://github.com/MOCAP4ROS2-Project/mocap4ros2_vicon.git
 ```
 
-Next, we move Vicon SDK sources (all but tests) to our repo:
+Next, we move Vicon SDK sources (and cpp test) to our repo:
 ```bash
 cd ~/workspace/mocap/src/mocap4ros2_vicon/vicon2_driver
 mkdir vicon_sdk
 cd vicon_sdk
 cp -rf ~/Downloads/Linux64/sources/Vicon/CrossMarket/DataStream .
 cp -rf ~/Downloads/Linux64/sources/Vicon/CrossMarket/StreamCommon .
+cp ~/Downloads/Linux64/ViconDataStreamSDK_CPPTest.cpp ~/workspace/mocap/src/mocap4ros2_vicon/vicon2_driver/src/ViconDataStreamSDK_CPPTest.cpp
 cd ~/workspace/mocap/src/mocap4ros2_vicon/vicon2_driver/vicon_sdk/DataStream/
 rm -rf *Test
 rm -rf ~/Downloads/Linux64
 rm -rf ~/Downloads/ViconDataStreamSDK_1.11.0.*
 ```
 
-Then we install any missing dependency:
+We need to change one include line in `ViconDataStreamSDK_CPPTest.cpp` in order to find the header in our package:
+```bash
+#include "ViconDataStreamSDK_CPP/DataStreamClient.h"
+```
+
+Now, we install any missing dependency:
 ```bash
 cd ~/workspace/mocap/src
 rosdep install --from-paths . --ignore-src --rosdistro humble -r -y 

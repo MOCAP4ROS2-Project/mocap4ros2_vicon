@@ -25,24 +25,24 @@
 #include <chrono>
 #include <vector>
 
-#include "rclcpp/time.hpp"
-
-#include "mocap_msgs/msg/marker.hpp"
-#include "mocap_msgs/msg/markers.hpp"
-#include "std_msgs/msg/empty.hpp"
-#include <geometry_msgs/msg/pose.hpp>
-#include <geometry_msgs/msg/pose_array.hpp>
-#include <pcl_conversions/pcl_conversions.h>
-#include <sensor_msgs/msg/point_cloud2.hpp>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include "ViconDataStreamSDK_CPP/DataStreamClient.h"
 
 #include "rclcpp/rclcpp.hpp"
+#include "tf2/buffer_core.h"
+#include "tf2_ros/transform_broadcaster.h"
+#include "mocap_control/ControlledLifecycleNode.hpp"
 #include "rclcpp/node_interfaces/node_logging.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
+
+#include "std_msgs/msg/empty.hpp"
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
 #include "lifecycle_msgs/srv/change_state.hpp"
 #include "lifecycle_msgs/srv/get_state.hpp"
+<<<<<<< HEAD
+#include "mocap_msgs/msg/marker.hpp"
+#include "mocap_msgs/msg/markers.hpp"
+=======
 
 #include "tf2/buffer_core.h"
 #include "tf2_ros/transform_broadcaster.h"
@@ -52,6 +52,7 @@
 
 #include "mocap_control/ControlledLifecycleNode.hpp"
 
+>>>>>>> master
 
 class ViconDriverNode : public mocap_control::ControlledLifecycleNode
 {
@@ -76,12 +77,12 @@ public:
   void set_settings_vicon();
   void start_vicon();
   bool stop_vicon();
+  int getMarkerIndex(const std::string & marker_name);
   void initParameters();
 
 protected:
   ViconDataStreamSDK::CPP::Client client;
   rclcpp::Time now_time_;
-  rclcpp::TimerBase::SharedPtr vicon_timer_;
   std::string myParam;
   rclcpp_lifecycle::LifecyclePublisher<mocap_msgs::msg::Markers>::SharedPtr marker_pub_;
   rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::PointCloud2>::SharedPtr marker_pcl2_publisher_;
@@ -99,8 +100,12 @@ protected:
   int droppedFrameCount_;
   int n_markers_;
   int n_unlabeled_markers_;
+  // unlabelled markers will get an unique number on detection
+  int unlabeled_counter_;
   std::string qos_history_policy_;
   std::string qos_reliability_policy_;
+  std::map<std::string, int> markers_list_;
+
   int qos_depth_;
 
   void process_frame();
@@ -108,7 +113,7 @@ protected:
   void process_markers(const rclcpp::Time & frame_time, unsigned int vicon_frame_num);
   void marker_to_tf(
     mocap_msgs::msg::Marker marker,
-    int marker_num, const rclcpp::Time & frame_time);
+    int marker_num, const rclcpp::Time & frame_time, const std::string & marker_name);
 
   void control_start(const mocap_control_msgs::msg::Control::SharedPtr msg) override;
   void control_stop(const mocap_control_msgs::msg::Control::SharedPtr msg) override;
