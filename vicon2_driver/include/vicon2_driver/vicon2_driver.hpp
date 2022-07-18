@@ -28,7 +28,6 @@
 #include "ViconDataStreamSDK_CPP/DataStreamClient.h"
 
 #include "rclcpp/rclcpp.hpp"
-#include "rclcpp/time.hpp"
 #include "tf2/buffer_core.h"
 #include "tf2_ros/transform_broadcaster.h"
 #include "mocap_control/ControlledLifecycleNode.hpp"
@@ -42,13 +41,6 @@
 #include "lifecycle_msgs/srv/get_state.hpp"
 #include "mocap_msgs/msg/marker.hpp"
 #include "mocap_msgs/msg/markers.hpp"
-
-using std::min;
-using std::max;
-using std::string;
-using std::map;
-using std::stringstream;
-using namespace ViconDataStreamSDK::CPP;
 
 class ViconDriverNode : public mocap_control::ControlledLifecycleNode
 {
@@ -73,16 +65,13 @@ public:
   void set_settings_vicon();
   void start_vicon();
   bool stop_vicon();
-  int getMarkerIndex(std::string marker_name);
+  int getMarkerIndex(const std::string & marker_name);
   void initParameters();
 
 protected:
   ViconDataStreamSDK::CPP::Client client;
-  // rclcpp::Node::SharedPtr vicon_node;
-  // std::shared_ptr<rclcpp::SyncParametersClient> parameters_client;
   rclcpp::Time now_time_;
   std::string myParam;
-  // rclcpp::Publisher<mocap4ros_msgs::msg::Markers>::SharedPtr marker_pub_;
   rclcpp_lifecycle::LifecyclePublisher<mocap_msgs::msg::Markers>::SharedPtr marker_pub_;
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
   std::string stream_mode_;
@@ -102,14 +91,14 @@ protected:
   std::string qos_history_policy_;
   std::string qos_reliability_policy_;
   std::map<std::string, int> markers_list_;
-  
+
   int qos_depth_;
 
   void process_frame();
   void process_markers(const rclcpp::Time & frame_time, unsigned int vicon_frame_num);
   void marker_to_tf(
     mocap_msgs::msg::Marker marker,
-    int marker_num, const rclcpp::Time & frame_time, std::string marker_name);
+    int marker_num, const rclcpp::Time & frame_time, const std::string & marker_name);
 
   void control_start(const mocap_control_msgs::msg::Control::SharedPtr msg) override;
   void control_stop(const mocap_control_msgs::msg::Control::SharedPtr msg) override;
