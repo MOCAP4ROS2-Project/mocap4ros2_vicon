@@ -5,8 +5,8 @@ vicon2_driver_node:
     tf_ref_frame_id: "vicon_world"
     tracked_frame_suffix: "vicon"
     publish_markers: true
-    marker_data_enabled: false
-    unlabeled_marker_data_enabled: false
+    marker_data_enabled: true
+    unlabeled_marker_data_enabled: true
     lastFrameNumber: 0
     frameCount: 0
     droppedFrameCount: 0

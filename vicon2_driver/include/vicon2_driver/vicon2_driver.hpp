@@ -39,8 +39,20 @@
 #include "lifecycle_msgs/msg/transition.hpp"
 #include "lifecycle_msgs/srv/change_state.hpp"
 #include "lifecycle_msgs/srv/get_state.hpp"
+<<<<<<< HEAD
 #include "mocap_msgs/msg/marker.hpp"
 #include "mocap_msgs/msg/markers.hpp"
+=======
+
+#include "tf2/buffer_core.h"
+#include "tf2_ros/transform_broadcaster.h"
+#include <sensor_msgs/msg/point_cloud2.hpp>
+
+#include "ViconDataStreamSDK_CPP/DataStreamClient.h"
+
+#include "mocap_control/ControlledLifecycleNode.hpp"
+
+>>>>>>> master
 
 class ViconDriverNode : public mocap_control::ControlledLifecycleNode
 {
@@ -73,6 +85,8 @@ protected:
   rclcpp::Time now_time_;
   std::string myParam;
   rclcpp_lifecycle::LifecyclePublisher<mocap_msgs::msg::Markers>::SharedPtr marker_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::PointCloud2>::SharedPtr marker_pcl2_publisher_;
+
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
   std::string stream_mode_;
   std::string host_name_;
@@ -95,6 +109,7 @@ protected:
   int qos_depth_;
 
   void process_frame();
+  void frame_callback();
   void process_markers(const rclcpp::Time & frame_time, unsigned int vicon_frame_num);
   void marker_to_tf(
     mocap_msgs::msg::Marker marker,
