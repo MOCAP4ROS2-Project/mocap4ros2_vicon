@@ -36,7 +36,7 @@ SDK files are placed to `C:\Program Files\Vicon\DataStream SDK\Win64\CPP` by def
 ## ROS2 Nodes
 
 ### ROS2 Humble install under Linux
-Once the SDK is installed, we will install this repo and [mocap](https://github.com/MOCAP4ROS2-Project/mocap.git) repository, which is also a dependency. 
+Once the SDK zip file is downloaded, we will install this repo and [mocap](https://github.com/MOCAP4ROS2-Project/mocap.git) repository, which is also a dependency. 
 
 First, we clone the repositories:
 ```bash
