@@ -1,3 +1,3 @@
-vicon2_driver/src/ViconDataStreamSDK_CPPTest.cpp
-vicon2_driver/vicon_sdk/
-vicon2_driver/*.zip
+mocap_vicon_driver/src/ViconDataStreamSDK_CPPTest.cpp
+mocap_vicon_driver/vicon_sdk/
+mocap_vicon_driver/*.zip
