@@ -56,12 +56,7 @@
 class ViconDriverNode : public mocap_control::ControlledLifecycleNode
 {
 public:
-  explicit ViconDriverNode(
-    const rclcpp::NodeOptions options =
-    rclcpp::NodeOptions().parameter_overrides(
-      std::vector<rclcpp::Parameter> {
-    rclcpp::Parameter("use_sim_time", true)
-  }));
+  explicit ViconDriverNode();
 
   using CallbackReturnT =
     rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;

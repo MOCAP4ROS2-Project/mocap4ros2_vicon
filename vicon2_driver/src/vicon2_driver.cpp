@@ -100,8 +100,8 @@ string Enum2String(const Result::Enum i_result)
 }
 
 // The vicon driver node has differents parameters to initialized with the vicon2_driver_params.yaml
-ViconDriverNode::ViconDriverNode(const rclcpp::NodeOptions node_options)
-: ControlledLifecycleNode("vicon2_driver_node", node_options)
+ViconDriverNode::ViconDriverNode()
+: ControlledLifecycleNode("vicon2_driver_node")
 {
   declare_parameter<std::string>("stream_mode", "ClientPull");
   declare_parameter<std::string>("host_name", "192.168.10.1:801");
@@ -282,17 +282,19 @@ void ViconDriverNode::process_markers(const rclcpp::Time & frame_time, unsigned 
     for (unsigned int MarkerIndex = 0; MarkerIndex < num_subject_markers; ++MarkerIndex)
     {
       mocap_msgs::msg::Marker this_marker;
+      this_marker.id_type = mocap_msgs::msg::Marker::USE_NAME;
       this_marker.marker_name = client.GetMarkerName(this_subject_name, MarkerIndex).MarkerName;
-      this_marker.subject_name = this_subject_name;
-      this_marker.segment_name
-          = client.GetMarkerParentName(this_subject_name, this_marker.marker_name).SegmentName;
+      
+      // this_marker.subject_name = this_subject_name;
+      // this_marker.segment_name
+      //     = client.GetMarkerParentName(this_subject_name, this_marker.marker_name).SegmentName;
       // Get the global marker translation
       Output_GetMarkerGlobalTranslation _Output_GetMarkerGlobalTranslation =
           client.GetMarkerGlobalTranslation(this_subject_name, this_marker.marker_name);
       this_marker.translation.x = _Output_GetMarkerGlobalTranslation.Translation[0];
       this_marker.translation.y = _Output_GetMarkerGlobalTranslation.Translation[1];
       this_marker.translation.z = _Output_GetMarkerGlobalTranslation.Translation[2];
-      this_marker.occluded = _Output_GetMarkerGlobalTranslation.Occluded;
+      // this_marker.occluded = _Output_GetMarkerGlobalTranslation.Occluded;
       markers_msg.markers.push_back(this_marker);
       marker_to_tf(this_marker, marker_cnt, frame_time);
       marker_cnt++;
@@ -390,10 +392,10 @@ void ViconDriverNode::marker_to_tf(
   } else{
     tracked_frame = marker.marker_name;
   }
-  RCLCPP_WARN(
-        get_logger(),
-        "new tf at (%s:%s)",
-        tracked_frame.c_str(),marker.occluded? "occluded": "not occluded" );
+  // RCLCPP_WARN(
+  //       get_logger(),
+  //       "new tf at (%s:%s)",
+  //       tracked_frame.c_str(),marker.occluded? "occluded": "not occluded" );
 
   tf_msg.header.stamp = frame_time;
   tf_msg.header.frame_id = tf_ref_frame_id_;
@@ -406,7 +408,7 @@ void ViconDriverNode::marker_to_tf(
   tf_msg.transform.rotation.z = transform.getRotation().z();
   tf_msg.transform.rotation.w = transform.getRotation().w();
 
-  if ((marker.marker_name.size()==0) || (!marker.occluded)) {
+  if ((marker.marker_name.size()==0)) {  //} || (!marker.occluded)) {
      transforms.push_back(tf_msg);
      tf_broadcaster_->sendTransform(transforms);
      RCLCPP_WARN(
