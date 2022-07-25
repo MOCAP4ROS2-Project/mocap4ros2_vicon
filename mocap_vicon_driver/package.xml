@@ -1,0 +1,29 @@
+<package format="3">
+  <name>mocap_vicon_driver</name>
+  <version>0.0.1</version>
+  <description>
+     This is a ROS2 driver providing data from VICON motion capture systems.
+  </description>
+  <author>Manuel Fernández Carmona</author>
+  <maintainer email="manolofc@gmail.com">Manuel Fernández Carmona</maintainer>
+
+  <license>Apache License, Version 2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>rclcpp_lifecycle</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>mocap_msgs</depend>
+  <depend>mocap_control</depend>
+
+  <test_depend>ament_cmake_gmock</test_depend>
+  <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+  <test_depend>ament_index_cpp</test_depend>
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
