@@ -16,7 +16,7 @@
 #include "mocap_vicon_driver/mocap_vicon_driver.hpp"
 
 using namespace std::chrono_literals;
-
+using namespace mocap_vicon_driver;
 
 // The vicon driver node has differents parameters to initialized with the mocap_vicon_driver_params.yaml
 ViconDriverNode::ViconDriverNode()
@@ -97,28 +97,31 @@ void ViconDriverNode::process_frame()
     ViconDataStreamSDK::CPP::Output_GetFrameNumber OutputFrameNum = client.GetFrameNumber();
     ViconDataStreamSDK::CPP::Output_GetFrameRate OutputFrameRate = client.GetFrameRate();
 
+    RCLCPP_DEBUG(
+      get_logger(), 
+      "GetFrame succeeded. Got frame [%d] at rate [%3.3f]", OutputFrameNum.FrameNumber,
+      OutputFrameRate.FrameRateHz);
+
     client.EnableMarkerData();
     client.EnableUnlabeledMarkerData();
 
     mocap_msgs::msg::Markers markers_msg;
     markers_msg.header.stamp = now();
-    markers_msg.frame_number = frameCount++;
+    markers_msg.frame_number = frameCount_++;
 
     unsigned int SubjectCount = client.GetSubjectCount().SubjectCount;
-    for (unsigned int SubjectIndex = 0; SubjectIndex < SubjectCount; ++SubjectIndex)
-    {
+    for (unsigned int SubjectIndex = 0; SubjectIndex < SubjectCount; ++SubjectIndex) {
       std::string this_subject_name = client.GetSubjectName(SubjectIndex).SubjectName;
 
       unsigned int num_subject_markers = client.GetMarkerCount(this_subject_name).MarkerCount;
-      n_markers_ += num_subject_markers;
 
-      for (unsigned int MarkerIndex = 0; MarkerIndex < num_subject_markers; ++MarkerIndex)
-      {
+      for (unsigned int MarkerIndex = 0; MarkerIndex < num_subject_markers; ++MarkerIndex) {
         mocap_msgs::msg::Marker this_marker;
         this_marker.id_type = mocap_msgs::msg::Marker::USE_NAME;
         this_marker.marker_name = client.GetMarkerName(this_subject_name, MarkerIndex).MarkerName;
 
-        Output_GetMarkerGlobalTranslation _Output_GetMarkerGlobalTranslation =
+        ViconDataStreamSDK::CPP::Output_GetMarkerGlobalTranslation
+          _Output_GetMarkerGlobalTranslation =
           client.GetMarkerGlobalTranslation(this_subject_name, this_marker.marker_name);
 
         this_marker.translation.x = _Output_GetMarkerGlobalTranslation.Translation[0];
@@ -147,7 +150,7 @@ ViconDriverNode::on_configure(const rclcpp_lifecycle::State &)
 
   auto stat = client.Connect(host_name_).Result;
 
-  if (cstat == ViconDataStreamSDK::CPP::Result::Success && lient.IsConnected().Connected) {
+  if (stat == ViconDataStreamSDK::CPP::Result::Success && client.IsConnected().Connected) {
     RCLCPP_INFO(get_logger(), "... connected!");
     return CallbackReturnT::SUCCESS;
   } else {
@@ -159,7 +162,6 @@ ViconDriverNode::on_configure(const rclcpp_lifecycle::State &)
 CallbackReturnT
 ViconDriverNode::on_activate(const rclcpp_lifecycle::State &)
 {
-  update_pub_->on_activate();
   marker_pub_->on_activate();
 
   set_settings_vicon();
@@ -172,7 +174,6 @@ ViconDriverNode::on_activate(const rclcpp_lifecycle::State &)
 CallbackReturnT
 ViconDriverNode::on_deactivate(const rclcpp_lifecycle::State &)
 {
-  update_pub_->on_deactivate();
   marker_pub_->on_deactivate();
 
   timer_ = nullptr;
@@ -211,7 +212,7 @@ void ViconDriverNode::initParameters()
 }
 
 // Transform the Vicon SDK enumerations to strings
-std::string Enum2String(const ViconDataStreamSDK::CPP::Direction::Enum i_Direction)
+std::string ViconDriverNode::Enum2String(const ViconDataStreamSDK::CPP::Direction::Enum i_Direction)
 {
   switch (i_Direction) {
     case ViconDataStreamSDK::CPP::Direction::Forward:
@@ -232,7 +233,7 @@ std::string Enum2String(const ViconDataStreamSDK::CPP::Direction::Enum i_Directi
 }
 
 // Transform the Vicon SDK enumerations to strings
-std::string Enum2String(const ViconDataStreamSDK::CPP::Result::Enum i_result)
+std::string ViconDriverNode::Enum2String(const ViconDataStreamSDK::CPP::Result::Enum i_result)
 {
   switch (i_result) {
     case ViconDataStreamSDK::CPP::Result::ClientAlreadyConnected:

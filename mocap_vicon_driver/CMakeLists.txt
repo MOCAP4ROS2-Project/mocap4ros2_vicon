@@ -11,7 +11,13 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
+# Download and Install vicon sdk
+execute_process(
+	COMMAND bash "-c" "${CMAKE_CURRENT_SOURCE_DIR}/vicon_sdk_install.sh"
+	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+#list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -64,6 +70,15 @@ target_link_libraries(mocap_vicon_driver
   vicon_sdk
 )
 
+add_executable(ViconDataStreamSDK_CPPTest
+  src/ViconDataStreamSDK_CPPTest.cpp
+)
+ament_target_dependencies(ViconDataStreamSDK_CPPTest ${dependencies})
+target_link_libraries(ViconDataStreamSDK_CPPTest
+  ${PROJECT_NAME}
+  vicon_sdk
+)
+
 install(DIRECTORY include/
   DESTINATION include/
 )
@@ -76,6 +91,7 @@ install(DIRECTORY
 
 install(TARGETS
   mocap_vicon_driver_main
+  ViconDataStreamSDK_CPPTest
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -86,18 +102,13 @@ install(TARGETS
   RUNTIME DESTINATION bin
 )
 
-
 if(BUILD_TESTING)
-
   find_package(ament_cmake_gtest REQUIRED)
   find_package(ament_lint_auto REQUIRED)
   find_package(ament_index_cpp REQUIRED)
-
   ament_lint_auto_find_test_dependencies()
-
   ament_add_gtest(test_mocap_vicon_driver test/test_mocap_vicon_driver.cpp)
   target_link_libraries(test_mocap_vicon_driver ${PROJECT_NAME})
-
 endif()
 
 ament_export_include_directories(include)

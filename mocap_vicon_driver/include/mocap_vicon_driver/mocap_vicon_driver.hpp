@@ -67,10 +67,11 @@ protected:
 
   void control_start(const mocap_control_msgs::msg::Control::SharedPtr msg) override;
   void control_stop(const mocap_control_msgs::msg::Control::SharedPtr msg) override;
-};
 
-std::string Enum2String(const ViconDataStreamSDK::CPP::Direction::Enum i_Direction);
-std::string Enum2String(const ViconDataStreamSDK::CPP::Result::Enum i_result);
+
+  std::string Enum2String(const ViconDataStreamSDK::CPP::Direction::Enum i_Direction);
+  std::string Enum2String(const ViconDataStreamSDK::CPP::Result::Enum i_result);
+};
 
 }  // namespace mocap_vicon_driver
 
