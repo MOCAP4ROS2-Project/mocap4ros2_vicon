@@ -1,5 +1,4 @@
-// Copyright (c) 2020, Intelligent Robotics Lab
-// Copyright (c) 2020, Airelectronics.
+// Copyright 2019 Intelligent Robotics Lab
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,19 +11,20 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Author: David Vargas Frutos <david.vargas@urjc.es>
 
-#include <string>
-#include <list>
+#include <iostream>
 #include <memory>
-
-#include "gtest/gtest.h"
-
+#include "vicon2_driver/vicon2_driver.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 int main(int argc, char * argv[])
 {
-  ::testing::InitGoogleTest(&argc, argv);
   rclcpp::init(argc, argv);
+  auto node = std::make_shared<ViconDriverNode>();
+  rclcpp::spin(node->get_node_base_interface());
+  rclcpp::shutdown();
 
-  return RUN_ALL_TESTS();
+  return 0;
 }

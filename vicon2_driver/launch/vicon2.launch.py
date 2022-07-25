@@ -1,4 +1,4 @@
-# Copyright 2022 Intelligent Robotics Lab
+# Copyright 2019 Intelligent Robotics Lab
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+#
+# Author: David Vargas Frutos <david.vargas@urjc.es>
 
 import os
 
@@ -30,7 +31,7 @@ import lifecycle_msgs.msg
 def generate_launch_description():
 
     params_file_path = os.path.join(get_package_share_directory(
-      'mocap_vicon_driver'), 'config', 'mocap_vicon_driver_params.yaml')
+      'vicon2_driver'), 'config', 'vicon2_driver_params.yaml')
 
     stdout_linebuf_envvar = SetEnvironmentVariable(
         'RCUTILS_LOGGING_BUFFERED_STREAM', '1')
@@ -40,10 +41,10 @@ def generate_launch_description():
     # print('')
 
     driver_node = LifecycleNode(
-        name='mocap_vicon_driver_node',
+        name='vicon2_driver_node',
         namespace='',
-        package='mocap_vicon_driver',
-        executable='mocap_vicon_driver_main',
+        package='vicon2_driver',
+        executable='vicon2_driver_main',
         output='screen',
         parameters=[params_file_path],
     )

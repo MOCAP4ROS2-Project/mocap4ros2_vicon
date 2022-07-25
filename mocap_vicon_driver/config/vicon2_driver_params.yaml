@@ -1,5 +1,0 @@
-mocap_vicon_driver_node:
-  ros__parameters:
-    stream_mode: "ClientPull"
-    host_name: "192.168.10.1:801"
-    frame_id: "mocap"

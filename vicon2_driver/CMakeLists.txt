@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(mocap_vicon_driver)
+project(vicon2_driver)
 
-# Default to C++17
+# Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD 14)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -16,9 +16,12 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
 find_package(mocap_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(mocap_control REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 
 # Used by Vicon SDK. Now we dont copy boost binaries shipped with driver.
 find_package(Boost REQUIRED COMPONENTS thread date_time)
@@ -26,9 +29,12 @@ find_package(Boost REQUIRED COMPONENTS thread date_time)
 set(dependencies
   rclcpp
   rclcpp_lifecycle
+  tf2
+  tf2_ros
   mocap_msgs
   mocap_control
   geometry_msgs
+  tf2_geometry_msgs
 )
 
 include_directories(
@@ -44,25 +50,34 @@ target_link_libraries(vicon_sdk PUBLIC ${Boost_LIBRARIES})
 
 add_library(
   ${PROJECT_NAME}
-src/mocap_vicon_driver/mocap_vicon_driver.cpp)
+src/vicon2_driver.cpp)
 
 ament_target_dependencies(${PROJECT_NAME} ${dependencies})
 target_compile_definitions(${PROJECT_NAME}
   PRIVATE "VICON_BUILDING_LIBRARY")
 
-add_executable(mocap_vicon_driver_main
-  src/mocap_vicon_driver_main.cpp
+add_executable(vicon2_driver_main
+  src/vicon2_driver_main.cpp
 )
-ament_target_dependencies(mocap_vicon_driver_main ${dependencies})
-target_link_libraries(mocap_vicon_driver_main
+ament_target_dependencies(vicon2_driver_main ${dependencies})
+target_link_libraries(vicon2_driver_main
   ${PROJECT_NAME}
   vicon_sdk
 )
 
-ament_target_dependencies(mocap_vicon_driver ${dependencies})
-target_link_libraries(mocap_vicon_driver 
+add_executable(ViconDataStreamSDK_CPPTest
+  src/ViconDataStreamSDK_CPPTest.cpp
+)
+ament_target_dependencies(ViconDataStreamSDK_CPPTest ${dependencies})
+target_link_libraries(ViconDataStreamSDK_CPPTest
+  ${PROJECT_NAME}
   vicon_sdk
 )
+
+ament_target_dependencies(vicon2_driver ${dependencies})
+target_link_libraries(vicon2_driver 
+  vicon_sdk
+  )
 
 install(DIRECTORY include/
   DESTINATION include/
@@ -75,7 +90,8 @@ install(DIRECTORY
 )
 
 install(TARGETS
-  mocap_vicon_driver_main
+  vicon2_driver_main
+  ViconDataStreamSDK_CPPTest
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -95,8 +111,8 @@ if(BUILD_TESTING)
 
   ament_lint_auto_find_test_dependencies()
 
-  ament_add_gtest(test_mocap_vicon_driver test/test_mocap_vicon_driver.cpp)
-  target_link_libraries(test_mocap_vicon_driver ${PROJECT_NAME})
+  ament_add_gtest(test_vicon2_driver test/test_vicon2_driver.cpp)
+  target_link_libraries(test_vicon2_driver ${PROJECT_NAME})
 
 endif()
 

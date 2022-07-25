@@ -1,6 +1,6 @@
 # Copyright 2020 National Institute of Advanced Industrial Science
 # and Technology, Japan
-# Copyright 2022 Intelligent Robotics Lab
+# Copyright 2019 Intelligent Robotics Lab
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+#
+# Author: Francisco Martín <fmrico@gmail.com>
 
 include(GNUInstallDirs)
 
