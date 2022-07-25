@@ -25,33 +25,22 @@
 #include <chrono>
 #include <vector>
 
-#include "rclcpp/time.hpp"
-
-#include "mocap_msgs/msg/marker.hpp"
-#include "mocap_msgs/msg/markers.hpp"
-#include "std_msgs/msg/empty.hpp"
-#include <geometry_msgs/msg/pose.hpp>
-#include <geometry_msgs/msg/pose_array.hpp>
-#include <pcl_conversions/pcl_conversions.h>
-#include <sensor_msgs/msg/point_cloud2.hpp>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include "ViconDataStreamSDK_CPP/DataStreamClient.h"
 
 #include "rclcpp/rclcpp.hpp"
+#include "tf2/buffer_core.h"
+#include "tf2_ros/transform_broadcaster.h"
+#include "mocap_control/ControlledLifecycleNode.hpp"
 #include "rclcpp/node_interfaces/node_logging.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
+
+#include "std_msgs/msg/empty.hpp"
 #include "lifecycle_msgs/msg/state.hpp"
 #include "lifecycle_msgs/msg/transition.hpp"
 #include "lifecycle_msgs/srv/change_state.hpp"
 #include "lifecycle_msgs/srv/get_state.hpp"
-
-#include "tf2/buffer_core.h"
-#include "tf2_ros/transform_broadcaster.h"
-#include <sensor_msgs/msg/point_cloud2.hpp>
-
-#include "ViconDataStreamSDK_CPP/DataStreamClient.h"
-
-#include "mocap_control/ControlledLifecycleNode.hpp"
-
+#include "mocap_msgs/msg/marker.hpp"
+#include "mocap_msgs/msg/markers.hpp"
 
 class ViconDriverNode : public mocap_control::ControlledLifecycleNode
 {
@@ -76,10 +65,8 @@ public:
 protected:
   ViconDataStreamSDK::CPP::Client client;
   rclcpp::Time now_time_;
-  rclcpp::TimerBase::SharedPtr vicon_timer_;
   std::string myParam;
   rclcpp_lifecycle::LifecyclePublisher<mocap_msgs::msg::Markers>::SharedPtr marker_pub_;
-  rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::PointCloud2>::SharedPtr marker_pcl2_publisher_;
 
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
   std::string stream_mode_;
@@ -94,8 +81,11 @@ protected:
   int droppedFrameCount_;
   int n_markers_;
   int n_unlabeled_markers_;
+  // unlabelled markers will get an unique number on detection
+  int unlabeled_counter_;
   std::string qos_history_policy_;
   std::string qos_reliability_policy_;
+
   int qos_depth_;
 
   void process_frame();

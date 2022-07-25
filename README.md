@@ -18,16 +18,9 @@ You can check the documentation [here](https://docs.vicon.com/spaces/viewspace.a
 
 ### Installing on Linux (version 1.11.0)
 
-Uncompress the official binaries and then uncompress the corresponding linux drivers and sources:
+After cloning the repository (see next section), copy the SDK zip file (`ViconDataStreamSDK_1.11.0_128037.zip`) to the folder `vicon2_driver` and use `vicon_sdk_install.sh` script. You will need p7zip installed on your system:
 ```bash
-cd ~/Downloads
-unzip ViconDataStreamSDK_1.11.0_128037.zip
-unzip ViconDataStreamSDK_1.11.0.128037h__Linux64.zip
-cd ~/Downloads/Linux64
 sudo aptitude install p7zip-full
-mkdir ~/Downloads/Linux64/sources
-cd sources
-7za x ../ViconDataStreamSDKSourceLinux64-source.7z 
 ```
 
 ### Installing on Windows
@@ -43,7 +36,7 @@ SDK files are placed to `C:\Program Files\Vicon\DataStream SDK\Win64\CPP` by def
 ## ROS2 Nodes
 
 ### ROS2 Humble install under Linux
-Once the SDK is installed, we will install this repo and [mocap](https://github.com/MOCAP4ROS2-Project/mocap.git) repository, which is also a dependency. 
+Once the SDK zip file is downloaded, we will install this repo and [mocap](https://github.com/MOCAP4ROS2-Project/mocap.git) repository, which is also a dependency. 
 
 First, we clone the repositories:
 ```bash
@@ -55,20 +48,14 @@ git clone https://github.com/MOCAP4ROS2-Project/mocap.git
 git clone https://github.com/MOCAP4ROS2-Project/mocap4ros2_vicon.git
 ```
 
-Next, we move Vicon SDK sources (all but tests) to our repo:
+Next, we copy the SDK zip file to the vicon2_driver folder and run our installer:
 ```bash
 cd ~/workspace/mocap/src/mocap4ros2_vicon/vicon2_driver
-mkdir vicon_sdk
-cd vicon_sdk
-cp -rf ~/Downloads/Linux64/sources/Vicon/CrossMarket/DataStream .
-cp -rf ~/Downloads/Linux64/sources/Vicon/CrossMarket/StreamCommon .
-cd ~/workspace/mocap/src/mocap4ros2_vicon/vicon2_driver/vicon_sdk/DataStream/
-rm -rf *Test
-rm -rf ~/Downloads/Linux64
-rm -rf ~/Downloads/ViconDataStreamSDK_1.11.0.*
+cp ~/Downloads/ViconDataStreamSDK_1.11.0_128037.zip .
+./vicon_sdk_install.sh
 ```
 
-Then we install any missing dependency:
+Now, we install any missing dependency:
 ```bash
 cd ~/workspace/mocap/src
 rosdep install --from-paths . --ignore-src --rosdistro humble -r -y 

@@ -14,36 +14,23 @@
 //
 // Author: David Vargas Frutos <david.vargas@urjc.es>
 
-#include <string>
-#include <vector>
-#include <memory>
-
 #include "vicon2_driver/vicon2_driver.hpp"
-#include "lifecycle_msgs/msg/state.hpp"
-
-using std::min;
-using std::max;
-using std::string;
-using std::map;
-using std::stringstream;
-using namespace std::chrono_literals;
-using namespace ViconDataStreamSDK::CPP;
 
 // Transform the Vicon SDK enumerations to strings
-string Enum2String(const Direction::Enum i_Direction)
+std::string Enum2String(const ViconDataStreamSDK::CPP::Direction::Enum i_Direction)
 {
   switch (i_Direction) {
-    case Direction::Forward:
+    case ViconDataStreamSDK::CPP::Direction::Forward:
       return "Forward";
-    case Direction::Backward:
+    case ViconDataStreamSDK::CPP::Direction::Backward:
       return "Backward";
-    case Direction::Left:
+    case ViconDataStreamSDK::CPP::Direction::Left:
       return "Left";
-    case Direction::Right:
+    case ViconDataStreamSDK::CPP::Direction::Right:
       return "Right";
-    case Direction::Up:
+    case ViconDataStreamSDK::CPP::Direction::Up:
       return "Up";
-    case Direction::Down:
+    case ViconDataStreamSDK::CPP::Direction::Down:
       return "Down";
     default:
       return "Unknown";
@@ -51,48 +38,48 @@ string Enum2String(const Direction::Enum i_Direction)
 }
 
 // Transform the Vicon SDK enumerations to strings
-string Enum2String(const Result::Enum i_result)
+std::string Enum2String(const ViconDataStreamSDK::CPP::Result::Enum i_result)
 {
   switch (i_result) {
-    case Result::ClientAlreadyConnected:
+    case ViconDataStreamSDK::CPP::Result::ClientAlreadyConnected:
       return "ClientAlreadyConnected";
-    case Result::ClientConnectionFailed:
-      return "";
-    case Result::CoLinearAxes:
+    case ViconDataStreamSDK::CPP::Result::ClientConnectionFailed:
+      return "ClientConnectionFailed";
+    case ViconDataStreamSDK::CPP::Result::CoLinearAxes:
       return "CoLinearAxes";
-    case Result::InvalidDeviceName:
+    case ViconDataStreamSDK::CPP::Result::InvalidDeviceName:
       return "InvalidDeviceName";
-    case Result::InvalidDeviceOutputName:
+    case ViconDataStreamSDK::CPP::Result::InvalidDeviceOutputName:
       return "InvalidDeviceOutputName";
-    case Result::InvalidHostName:
+    case ViconDataStreamSDK::CPP::Result::InvalidHostName:
       return "InvalidHostName";
-    case Result::InvalidIndex:
+    case ViconDataStreamSDK::CPP::Result::InvalidIndex:
       return "InvalidIndex";
-    case Result::InvalidLatencySampleName:
+    case ViconDataStreamSDK::CPP::Result::InvalidLatencySampleName:
       return "InvalidLatencySampleName";
-    case Result::InvalidMarkerName:
+    case ViconDataStreamSDK::CPP::Result::InvalidMarkerName:
       return "InvalidMarkerName";
-    case Result::InvalidMulticastIP:
+    case ViconDataStreamSDK::CPP::Result::InvalidMulticastIP:
       return "InvalidMulticastIP";
-    case Result::InvalidSegmentName:
+    case ViconDataStreamSDK::CPP::Result::InvalidSegmentName:
       return "InvalidSegmentName";
-    case Result::InvalidSubjectName:
+    case ViconDataStreamSDK::CPP::Result::InvalidSubjectName:
       return "InvalidSubjectName";
-    case Result::LeftHandedAxes:
+    case ViconDataStreamSDK::CPP::Result::LeftHandedAxes:
       return "LeftHandedAxes";
-    case Result::NoFrame:
+    case ViconDataStreamSDK::CPP::Result::NoFrame:
       return "NoFrame";
-    case Result::NotConnected:
+    case ViconDataStreamSDK::CPP::Result::NotConnected:
       return "NotConnected";
-    case Result::NotImplemented:
+    case ViconDataStreamSDK::CPP::Result::NotImplemented:
       return "NotImplemented";
-    case Result::ServerAlreadyTransmittingMulticast:
+    case ViconDataStreamSDK::CPP::Result::ServerAlreadyTransmittingMulticast:
       return "ServerAlreadyTransmittingMulticast";
-    case Result::ServerNotTransmittingMulticast:
+    case ViconDataStreamSDK::CPP::Result::ServerNotTransmittingMulticast:
       return "ServerNotTransmittingMulticast";
-    case Result::Success:
+    case ViconDataStreamSDK::CPP::Result::Success:
       return "Success";
-    case Result::Unknown:
+    case ViconDataStreamSDK::CPP::Result::Unknown:
       return "Unknown";
     default:
       return "unknown";
@@ -123,11 +110,11 @@ ViconDriverNode::ViconDriverNode()
 // In charge of choose the different driver options related and provided by the Vicon SDK
 void ViconDriverNode::set_settings_vicon()
 {
-  Result::Enum result(Result::Unknown);
+  ViconDataStreamSDK::CPP::Result::Enum result(ViconDataStreamSDK::CPP::Result::Unknown);
   if (stream_mode_ == "ServerPush") {
-    result = client.SetStreamMode(StreamMode::ServerPush).Result;
+    result = client.SetStreamMode(ViconDataStreamSDK::CPP::StreamMode::ServerPush).Result;
   } else if (stream_mode_ == "ClientPull") {
-    result = client.SetStreamMode(StreamMode::ClientPull).Result;
+    result = client.SetStreamMode(ViconDataStreamSDK::CPP::StreamMode::ClientPull).Result;
   } else {
     RCLCPP_FATAL(get_logger(), "Unknown stream mode -- options are ServerPush, ClientPull");
     rclcpp::shutdown();
@@ -138,9 +125,9 @@ void ViconDriverNode::set_settings_vicon()
     stream_mode_.c_str(), Enum2String(result).c_str());
 
   client.SetAxisMapping(
-    Direction::Forward,
-    Direction::Left, Direction::Up);
-  Output_GetAxisMapping _Output_GetAxisMapping = client.GetAxisMapping();
+    ViconDataStreamSDK::CPP::Direction::Forward,
+    ViconDataStreamSDK::CPP::Direction::Left, ViconDataStreamSDK::CPP::Direction::Up);
+  ViconDataStreamSDK::CPP::Output_GetAxisMapping _Output_GetAxisMapping = client.GetAxisMapping();
 
   RCLCPP_INFO(
     get_logger(),
@@ -155,7 +142,7 @@ void ViconDriverNode::set_settings_vicon()
     get_logger(), "IsSegmentDataEnabled? %s",
     client.IsSegmentDataEnabled().Enabled ? "true" : "false");
 
-  Output_GetVersion _Output_GetVersion = client.GetVersion();
+  ViconDataStreamSDK::CPP::Output_GetVersion _Output_GetVersion = client.GetVersion();
 
   RCLCPP_INFO(
     get_logger(), "Version: %d.%d.%d",
@@ -164,28 +151,22 @@ void ViconDriverNode::set_settings_vicon()
     _Output_GetVersion.Point
   );
 
-  /*
-  if (publish_markers_) {
-    marker_pub_ = create_publisher<mocap4ros_msgs::msg::Markers>(
-      tracked_frame_suffix_ + "/markers", 100);
-    RCLCPP_WARN(get_logger(), "publish_markers_ configured!!!");
-  }
-  */
+  unlabeled_counter_ = 0;
+
 }
 
 // Start the vicon_driver_node if the Vicon system is OK.
 void ViconDriverNode::start_vicon()
 {
   set_settings_vicon();
-  vicon_timer_ = create_wall_timer(100ms, std::bind(&ViconDriverNode::frame_callback, this));
-}
-
-void ViconDriverNode::frame_callback()
-{  
-  if (rclcpp::ok()) {
-    // repeat till get a valid frame
-    while (client.GetFrame().Result != Result::Success && rclcpp::ok()) {
-      RCLCPP_WARN(get_logger(), "getFrame returned false");      
+  auto period = std::chrono::milliseconds(100);
+  rclcpp::Rate d(period);
+  while (rclcpp::ok()) {
+    ViconDataStreamSDK::CPP::Output_GetFrame ans = client.GetFrame();
+    while (ans.Result != ViconDataStreamSDK::CPP::Result::Success) {
+      RCLCPP_DEBUG(get_logger(), "getFrame returned [%s]", Enum2String(ans.Result).c_str());
+      d.sleep();
+      ans = client.GetFrame();
     }
     now_time_ = this->now();
     process_frame();
@@ -202,22 +183,30 @@ bool ViconDriverNode::stop_vicon()
 }
 
 // In charge of the transition of the lifecycle node
-void ViconDriverNode::control_start(const mocap_control_msgs::msg::Control::SharedPtr msg) {
-  trigger_transition(rclcpp_lifecycle::Transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE));
+void ViconDriverNode::control_start(const mocap_control_msgs::msg::Control::SharedPtr msg)
+{
+  trigger_transition(
+    rclcpp_lifecycle::Transition(
+      lifecycle_msgs::msg::Transition::
+      TRANSITION_ACTIVATE));
 }
 
 // In charge of the transition of the lifecycle node
-void ViconDriverNode::control_stop(const mocap_control_msgs::msg::Control::SharedPtr msg) {
-  trigger_transition(rclcpp_lifecycle::Transition(lifecycle_msgs::msg::Transition::TRANSITION_ACTIVATE));
+void ViconDriverNode::control_stop(const mocap_control_msgs::msg::Control::SharedPtr msg)
+{
+  trigger_transition(
+    rclcpp_lifecycle::Transition(
+      lifecycle_msgs::msg::Transition::
+      TRANSITION_ACTIVATE));
 }
 
 // In charge of get the Vicon information and convert it to vicon_msgs
 void ViconDriverNode::process_frame()
 {
   static rclcpp::Time lastTime;
-  Output_GetFrameNumber OutputFrameNum = client.GetFrameNumber();
-  Output_GetFrameRate OutputFrameRate = client.GetFrameRate();
-  RCLCPP_WARN(get_logger(), "Frame rate: %f", OutputFrameRate.FrameRateHz);
+  ViconDataStreamSDK::CPP::Output_GetFrameNumber OutputFrameNum = client.GetFrameNumber();
+  ViconDataStreamSDK::CPP::Output_GetFrameRate OutputFrameRate = client.GetFrameRate();
+  RCLCPP_DEBUG(get_logger(), "Frame rate: %f", OutputFrameRate.FrameRateHz);
 
   int frameDiff = 0;
   if (lastFrameNumber_ != 0) {
@@ -252,18 +241,20 @@ void ViconDriverNode::process_markers(const rclcpp::Time & frame_time, unsigned 
     marker_data_enabled_ = true;
     client.EnableMarkerData();
 
-    RCLCPP_INFO(
+    RCLCPP_DEBUG(
       get_logger(), "IsMarkerDataEnabled? %s",
       client.IsMarkerDataEnabled().Enabled ? "true" : "false");
   }
+
   if (!unlabeled_marker_data_enabled_) {
     unlabeled_marker_data_enabled_ = true;
     client.EnableUnlabeledMarkerData();
 
-    RCLCPP_INFO(
+    RCLCPP_DEBUG(
       get_logger(), "IsUnlabeledMarkerDataEnabled? %s",
       client.IsUnlabeledMarkerDataEnabled().Enabled ? "true" : "false");
   }
+
   n_markers_ = 0;
   mocap_msgs::msg::Markers markers_msg;
   markers_msg.header.stamp = frame_time;
@@ -299,72 +290,14 @@ void ViconDriverNode::process_markers(const rclcpp::Time & frame_time, unsigned 
       marker_to_tf(this_marker, marker_cnt, frame_time);
       marker_cnt++;
     }
-  }
 
-  unsigned int UnlabeledMarkerCount = client.GetUnlabeledMarkerCount().MarkerCount;
-
-  RCLCPP_INFO(
-    get_logger(),
-    "# unlabeled markers: %d", UnlabeledMarkerCount);
-  n_markers_ += UnlabeledMarkerCount;
-  n_unlabeled_markers_ = UnlabeledMarkerCount;
-
-
-  pcl::PointCloud<pcl::PointXYZRGB> markers_cloud;
-
-  geometry_msgs::msg::PoseArray marker_poses;
-  marker_poses.header.frame_id = tf_ref_frame_id_;
-  marker_poses.header.stamp = frame_time;
-  
-  for (unsigned int UnlabeledMarkerIndex = 0;
-    UnlabeledMarkerIndex < UnlabeledMarkerCount;
-    ++UnlabeledMarkerIndex)
-  {
-    // Get the global marker translationSegmentPublisher
-    Output_GetUnlabeledMarkerGlobalTranslation
-      _Output_GetUnlabeledMarkerGlobalTranslation =
-      client.GetUnlabeledMarkerGlobalTranslation(UnlabeledMarkerIndex);
-
-    if (_Output_GetUnlabeledMarkerGlobalTranslation.Result ==
-      Result::Success)
-    {
-      mocap_msgs::msg::Marker this_marker;
-      this_marker.translation.x = _Output_GetUnlabeledMarkerGlobalTranslation.Translation[0];
-      this_marker.translation.y = _Output_GetUnlabeledMarkerGlobalTranslation.Translation[1];
-      this_marker.translation.z = _Output_GetUnlabeledMarkerGlobalTranslation.Translation[2];
-           
-      pcl::PointXYZRGB pt;
-      pt = pcl::PointXYZRGB(1.0f, 0.2f, 0.0f);
-      pt.x = this_marker.translation.x/1000.0;;
-      pt.y = this_marker.translation.y/1000.0;
-      pt.z = this_marker.translation.z/1000.0;
-      markers_cloud.points.push_back(pt);
-
-      // this_marker.occluded = false;
-      markers_msg.markers.push_back(this_marker);
-
-      marker_to_tf(this_marker, marker_cnt, frame_time);
-      marker_cnt++;
-    } else {
+    if (!marker_pub_->is_activated()) {
       RCLCPP_WARN(
         get_logger(),
-        "GetUnlabeledMarkerGlobalTranslation failed (result = %s)",
-        Enum2String(_Output_GetUnlabeledMarkerGlobalTranslation.Result).c_str());
+        "Lifecycle publisher is currently inactive. Messages are not published.");
     }
+    marker_pub_->publish(markers_msg);
   }
-  if (!marker_pub_->is_activated()) {
-    RCLCPP_WARN(
-      get_logger(),
-      "Lifecycle publisher is currently inactive. Messages are not published.");
-  }
-  marker_pub_->publish(markers_msg);
-
-  auto pc2_msg_ = std::make_shared<sensor_msgs::msg::PointCloud2>();
-  pcl::toROSMsg(markers_cloud, *pc2_msg_);
-  pc2_msg_->header.frame_id = tf_ref_frame_id_;
-  pc2_msg_->header.stamp = now();
-  marker_pcl2_publisher_->publish(*pc2_msg_);
-  
 }
 
 // Transform and publish the information previously procesed by the process_markers and converted in ROS-TFs.
@@ -372,41 +305,36 @@ void ViconDriverNode::marker_to_tf(
   mocap_msgs::msg::Marker marker,
   int marker_num, const rclcpp::Time & frame_time)
 {
-  tf2::Transform transform;
   std::vector<geometry_msgs::msg::TransformStamped> transforms;
-  string tracked_frame;
+  std::string tracked_frame;
   geometry_msgs::msg::TransformStamped tf_msg;
 
-  transform.setOrigin(
-    tf2::Vector3(
-      marker.translation.x / 1000,
-      marker.translation.y / 1000,
-      marker.translation.z / 1000));
-
-  transform.setRotation(tf2::Quaternion(0, 0, 0, 1));
-  stringstream marker_num_str;
-  marker_num_str << marker_num;
-
-  if (marker.marker_name.size()==0){
-    tracked_frame = tracked_frame_suffix_ + "/marker_tf_" + marker_num_str.str();
-  } else{
-    tracked_frame = marker.marker_name;
+  // occluded markers are reported at 0,0,0 and are NOT PUBLISHED
+  if ( (marker.translation.x ==
+    0.0) & (marker.translation.y == 0.0) & (marker.translation.z == 0.0) )
+  {
+    return;
   }
-  // RCLCPP_WARN(
-  //       get_logger(),
-  //       "new tf at (%s:%s)",
-  //       tracked_frame.c_str(),marker.occluded? "occluded": "not occluded" );
+
+  // Unlabeled markers have no name, so we need to create one
+  std::stringstream marker_num_str;
+  marker_num_str << marker_num;
+  if (marker.marker_name.size() == 0) {
+    tracked_frame = tracked_frame_suffix_ + "/marker_tf_" + marker_num_str.str();
+  } else {
+    tracked_frame = tracked_frame_suffix_ + "/" + marker.marker_name;
+  }
 
   tf_msg.header.stamp = frame_time;
   tf_msg.header.frame_id = tf_ref_frame_id_;
   tf_msg.child_frame_id = tracked_frame;
-  tf_msg.transform.translation.x = transform.getOrigin().x();
-  tf_msg.transform.translation.y = transform.getOrigin().y();
-  tf_msg.transform.translation.z = transform.getOrigin().z();
-  tf_msg.transform.rotation.x = transform.getRotation().x();
-  tf_msg.transform.rotation.y = transform.getRotation().y();
-  tf_msg.transform.rotation.z = transform.getRotation().z();
-  tf_msg.transform.rotation.w = transform.getRotation().w();
+  tf_msg.transform.translation.x = marker.translation.x / 1000;
+  tf_msg.transform.translation.y = marker.translation.y / 1000;
+  tf_msg.transform.translation.z = marker.translation.z / 1000;
+  tf_msg.transform.rotation.x = 0.0;
+  tf_msg.transform.rotation.y = 0.0;
+  tf_msg.transform.rotation.z = 0.0;
+  tf_msg.transform.rotation.w = 1;
 
   if ((marker.marker_name.size()==0)) {  //} || (!marker.occluded)) {
      transforms.push_back(tf_msg);
@@ -457,9 +385,6 @@ ViconDriverNode::on_configure(const rclcpp_lifecycle::State &)
   marker_pub_ = create_publisher<mocap_msgs::msg::Markers>(
     tracked_frame_suffix_ + "/markers", 100);
 
-  marker_pcl2_publisher_ = create_publisher<sensor_msgs::msg::PointCloud2>(
-    tracked_frame_suffix_ + "/point_cloud", 100);
-
   update_pub_ = create_publisher<std_msgs::msg::Empty>(
     "/vicon2_driver/update_notify", qos);
 
@@ -475,7 +400,6 @@ ViconDriverNode::on_activate(const rclcpp_lifecycle::State &)
   RCLCPP_INFO(get_logger(), "State label [%s]", get_current_state().label().c_str());
   update_pub_->on_activate();
   marker_pub_->on_activate();
-  marker_pcl2_publisher_->on_activate();
 
   connect_vicon();
   RCLCPP_INFO(get_logger(), "Activated!\n");
@@ -490,8 +414,6 @@ ViconDriverNode::on_deactivate(const rclcpp_lifecycle::State &)
   RCLCPP_INFO(get_logger(), "State label [%s]", get_current_state().label().c_str());
   update_pub_->on_deactivate();
   marker_pub_->on_deactivate();
-  marker_pcl2_publisher_->on_deactivate();
-  vicon_timer_->cancel();
   RCLCPP_INFO(get_logger(), "Deactivated!\n");
 
   return CallbackReturnT::SUCCESS;
@@ -531,15 +453,16 @@ ViconDriverNode::on_error(const rclcpp_lifecycle::State &)
 // In charge of find and connect the driver with the Vicon SDK.
 bool ViconDriverNode::connect_vicon()
 {
-  RCLCPP_WARN(
+  RCLCPP_INFO(
     get_logger(),
     "Trying to connect to Vicon DataStream SDK at %s ...", host_name_.c_str());
 
-  if (client.Connect(host_name_).Result == Result::Success) {
+  auto stat = client.Connect(host_name_).Result;
+  if (stat == ViconDataStreamSDK::CPP::Result::Success) {
     RCLCPP_INFO(get_logger(), "... connected!");
     start_vicon();
   } else {
-    RCLCPP_INFO(get_logger(), "... not connected :( ");
+    RCLCPP_INFO(get_logger(), "... not connected :(  [%s]", Enum2String(stat).c_str());
   }
 
   return client.IsConnected().Connected;
