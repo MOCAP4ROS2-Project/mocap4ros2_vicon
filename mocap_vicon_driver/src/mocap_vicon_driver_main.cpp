@@ -16,13 +16,13 @@
 
 #include <iostream>
 #include <memory>
-#include "vicon2_driver/vicon2_driver.hpp"
+#include "mocap_vicon_driver/mocap_vicon_driver.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
-  auto node = std::make_shared<ViconDriverNode>();
+  auto node = std::make_shared<mocap_vicon_driver::ViconDriverNode>();
   rclcpp::spin(node->get_node_base_interface());
   rclcpp::shutdown();
 
