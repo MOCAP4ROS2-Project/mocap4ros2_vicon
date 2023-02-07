@@ -30,3 +30,13 @@ research and innovation programme under grant agreement no. 732287.
 <img align="center" src="https://github.com/MOCAP4ROS2-Project/mocap4ros2_exp_and_resources/blob/master/resources/mocap4ros_arch.png" 
     alt="mocap4ros_arch" width="100%">
 </p>
+
+# Dependencies
+
+Prior to building the following dependencies need to be installed:
+- `mocap_msgs`: https://github.com/MOCAP4ROS2-Project/mocap_msgs
+- `mocap_control`: packaged as a part of mocap here - https://github.com/MOCAP4ROS2-Project/mocap
+
+# Building
+
+- `colcon build --packages-up-to mocap_vicon_driver` should build the aforementioned dependencies and the MOCAP package itself
