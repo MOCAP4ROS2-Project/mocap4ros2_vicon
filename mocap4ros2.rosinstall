@@ -1,0 +1,8 @@
+- git:
+    uri: https://github.com/MOCAP4ROS2-Project/mocap_msgs
+    local-name: mocap_msgs
+    version: master
+- git:
+    uri: https://github.com/MOCAP4ROS2-Project/mocap.git
+    local-name: mocap
+    version: main
