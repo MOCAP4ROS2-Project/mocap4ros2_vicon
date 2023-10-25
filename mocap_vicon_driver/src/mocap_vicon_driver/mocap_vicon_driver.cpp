@@ -73,15 +73,16 @@ void ViconDriverNode::set_settings_vicon()
 
 }
 
-
 // In charge of the transition of the lifecycle node
 void ViconDriverNode::control_start(const mocap_control_msgs::msg::Control::SharedPtr msg)
 {
+  (void)msg;
 }
 
 // In charge of the transition of the lifecycle node
 void ViconDriverNode::control_stop(const mocap_control_msgs::msg::Control::SharedPtr msg)
 {
+  (void)msg;
 }
 
 // In charge of get the Vicon information and convert it to vicon_msgs
@@ -102,11 +103,19 @@ void ViconDriverNode::process_frame()
       "GetFrame succeeded. Got frame [%d] at rate [%3.3f]", OutputFrameNum.FrameNumber,
       OutputFrameRate.FrameRateHz);
 
+    // TODO: part of vicon settings, move to on_activate?
+    client.EnableSegmentData();
     client.EnableMarkerData();
     client.EnableUnlabeledMarkerData();
 
+    rclcpp::Duration frame_delay = rclcpp::Duration(client.GetLatencyTotal().Total);
+
+    mocap_msgs::msg::RigidBodies rigid_bodies_msg;
+    rigid_bodies_msg.header.stamp = now();  // TODO: add client.GetLatencyTotal() ?
+    rigid_bodies_msg.frame_number = frameCount_++;
+
     mocap_msgs::msg::Markers markers_msg;
-    markers_msg.header.stamp = now();
+    markers_msg.header.stamp = now();  // TODO: add client.GetLatencyTotal() ?
     markers_msg.frame_number = frameCount_++;
 
     unsigned int SubjectCount = client.GetSubjectCount().SubjectCount;
@@ -114,7 +123,6 @@ void ViconDriverNode::process_frame()
       std::string this_subject_name = client.GetSubjectName(SubjectIndex).SubjectName;
 
       unsigned int num_subject_markers = client.GetMarkerCount(this_subject_name).MarkerCount;
-
       for (unsigned int MarkerIndex = 0; MarkerIndex < num_subject_markers; ++MarkerIndex) {
         mocap_msgs::msg::Marker this_marker;
         this_marker.id_type = mocap_msgs::msg::Marker::USE_NAME;
@@ -130,8 +138,30 @@ void ViconDriverNode::process_frame()
 
         markers_msg.markers.push_back(this_marker);
       }
-
       marker_pub_->publish(markers_msg);
+
+      unsigned int num_subject_segments = client.GetSegmentCount(this_subject_name).SegmentCount;
+      for (unsigned int SegmentIndex = 0; SegmentIndex < num_subject_segments; ++SegmentIndex) {
+        std::string this_segment_name = client.GetSegmentName(this_subject_name, SegmentIndex).SegmentName;
+
+        ViconDataStreamSDK::CPP::Output_GetSegmentGlobalTranslation trans =
+          client.GetSegmentGlobalTranslation(this_subject_name, this_segment_name);
+        ViconDataStreamSDK::CPP::Output_GetSegmentGlobalRotationQuaternion rot =
+          client.GetSegmentGlobalRotationQuaternion(this_subject_name, this_segment_name);
+
+        mocap_msgs::msg::RigidBody this_segment;
+        this_segment.rigid_body_name = this_segment_name;
+        // TODO: move markers to rigid body
+        this_segment.pose.position.x = trans.Translation[0];
+        this_segment.pose.position.y = trans.Translation[1];
+        this_segment.pose.position.z = trans.Translation[2];
+        this_segment.pose.orientation.x = rot.Rotation[0];
+        this_segment.pose.orientation.y = rot.Rotation[1];
+        this_segment.pose.orientation.z = rot.Rotation[2];
+        this_segment.pose.orientation.w = rot.Rotation[3];
+        rigid_bodies_msg.rigidbodies.push_back(this_segment);
+      }
+      rigid_bodies_pub_->publish(rigid_bodies_msg);
     }
   }
 }
@@ -146,7 +176,8 @@ ViconDriverNode::on_configure(const rclcpp_lifecycle::State &)
 {
   initParameters();
 
-  marker_pub_ = create_publisher<mocap_msgs::msg::Markers>("/markers", 1000);
+  marker_pub_ = create_publisher<mocap_msgs::msg::Markers>("/markers", rclcpp::QoS(1000));
+  rigid_bodies_pub_ = create_publisher<mocap_msgs::msg::RigidBodies>("/rigid_bodies", rclcpp::QoS(1000));
 
   auto stat = client.Connect(host_name_).Result;
 
@@ -163,9 +194,11 @@ CallbackReturnT
 ViconDriverNode::on_activate(const rclcpp_lifecycle::State &)
 {
   marker_pub_->on_activate();
+  rigid_bodies_pub_->on_activate();
 
   set_settings_vicon();
 
+  // TODO: timer freq to be configurable
   timer_ = create_wall_timer(10ms, std::bind(&ViconDriverNode::process_frame, this));
 
   return CallbackReturnT::SUCCESS;
@@ -175,6 +208,11 @@ CallbackReturnT
 ViconDriverNode::on_deactivate(const rclcpp_lifecycle::State &)
 {
   marker_pub_->on_deactivate();
+  rigid_bodies_pub_->on_deactivate();
+
+  client.DisableSegmentData();
+  client.DisableMarkerData();
+  client.DisableUnlabeledMarkerData();
 
   timer_ = nullptr;
 

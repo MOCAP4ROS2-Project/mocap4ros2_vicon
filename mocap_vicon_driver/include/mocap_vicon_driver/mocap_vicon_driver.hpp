@@ -31,6 +31,7 @@
 
 #include "mocap_msgs/msg/marker.hpp"
 #include "mocap_msgs/msg/markers.hpp"
+#include "mocap_msgs/msg/rigid_bodies.hpp"
 
 namespace mocap_vicon_driver
 {
@@ -56,6 +57,7 @@ public:
 protected:
   ViconDataStreamSDK::CPP::Client client;
   rclcpp_lifecycle::LifecyclePublisher<mocap_msgs::msg::Markers>::SharedPtr marker_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<mocap_msgs::msg::RigidBodies>::SharedPtr rigid_bodies_pub_;
   rclcpp::TimerBase::SharedPtr timer_;
 
   std::string stream_mode_;
