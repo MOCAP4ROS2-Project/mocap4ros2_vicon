@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.com/MOCAP4ROS2-Project/mocap4ros2_vicon.svg?branch=master)](https://travis-ci.com/MOCAP4ROS2-Project/mocap4ros2_vicon)
 
-This project provides support for ROS2 integration with Vicon cameras (MOCAP systems based on vision) and Technaid TechMCS IMUs (MOCAP systems based on motion sensors).
+This project provides support for ROS2 integration with Vicon cameras (MOCAP systems based on vision).
 
 # Installation
 
@@ -29,9 +29,9 @@ cd ~/mocap_ws/src
 git clone https://github.com/MOCAP4ROS2-Project/mocap4ros2_vicon.git -b master
 ## clone necessary mocap repositories
 cp mocap4ros2_vicon/mocap4ros2.rosinstall .rosinstall
+wstool update
 
 ## manage ros2 dependencies for our workspace
-wstool update
 # rosdep init may not be needed
 sudo rosdep init
 rosdep update
