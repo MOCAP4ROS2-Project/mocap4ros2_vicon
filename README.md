@@ -2,13 +2,13 @@
 
 [![Build Status](https://travis-ci.com/MOCAP4ROS2-Project/mocap4ros2_vicon.svg?branch=master)](https://travis-ci.com/MOCAP4ROS2-Project/mocap4ros2_vicon)
 
-This project provides support for ROS2 integration with Vicon cameras (MOCAP systems based on vision).
+This project provides support for ROS2 integration with Vicon cameras (MOCAP systems based on vision) as part of the project [MOCAP4ROS2](https://rosin-project.eu/ftp/mocap4ros2).
 
 # Installation
 
 ## Dependencies:
 Vicon drivers for ROS2 are based on Vicon DataStream SDK 1.11.0. When compiling the `mocap_vicon_driver`, SDK is downloaded and installed, requiring packages `wget` and `p7zip-full` for this.
-Also, our package depends on other two repositories from MOCAP4ROS2-Project:
+Also, our package depends on other two repositories from MOCAP4ROS2 Project:
 - [mocap_msgs](https://github.com/MOCAP4ROS2-Project/mocap_msgs)
 - [mocap_control](https://github.com/MOCAP4ROS2-Project/mocap)
 
