@@ -56,7 +56,7 @@ public:
 
 protected:
   ViconDataStreamSDK::CPP::Client client;
-  rclcpp_lifecycle::LifecyclePublisher<mocap_msgs::msg::Markers>::SharedPtr marker_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<mocap_msgs::msg::Markers>::SharedPtr markers_pub_;
   rclcpp_lifecycle::LifecyclePublisher<mocap_msgs::msg::RigidBodies>::SharedPtr rigid_bodies_pub_;
   rclcpp::TimerBase::SharedPtr timer_;
 

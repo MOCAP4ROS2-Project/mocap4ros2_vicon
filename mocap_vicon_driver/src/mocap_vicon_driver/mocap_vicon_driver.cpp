@@ -72,7 +72,6 @@ void ViconDriverNode::set_settings_vicon()
     _Output_GetVersion.Minor,
     _Output_GetVersion.Point
   );
-
 }
 
 // In charge of the transition of the lifecycle node
@@ -90,7 +89,7 @@ void ViconDriverNode::control_stop(const mocap_control_msgs::msg::Control::Share
 // In charge of get the Vicon information and convert it to vicon_msgs
 void ViconDriverNode::process_frame()
 {
-  if (marker_pub_->get_subscription_count() == 0 && rigid_bodies_pub_->get_subscription_count() == 0) {
+  if (markers_pub_->get_subscription_count() == 0 && rigid_bodies_pub_->get_subscription_count() == 0) {
     return;
   }
 
@@ -137,7 +136,7 @@ void ViconDriverNode::process_frame()
 
         markers_msg.markers.push_back(this_marker);
       }
-      marker_pub_->publish(markers_msg);
+      markers_pub_->publish(markers_msg);
 
       unsigned int num_subject_segments = client.GetSegmentCount(this_subject_name).SegmentCount;
       for (unsigned int SegmentIndex = 0; SegmentIndex < num_subject_segments; ++SegmentIndex) {
@@ -176,7 +175,7 @@ ViconDriverNode::on_configure(const rclcpp_lifecycle::State &)
 {
   initParameters();
 
-  marker_pub_ = create_publisher<mocap_msgs::msg::Markers>("/markers", rclcpp::QoS(1000));
+  markers_pub_ = create_publisher<mocap_msgs::msg::Markers>("/markers", rclcpp::QoS(1000));
   rigid_bodies_pub_ = create_publisher<mocap_msgs::msg::RigidBodies>("/rigid_bodies", rclcpp::QoS(1000));
 
   auto stat = client.Connect(host_name_).Result;
@@ -193,7 +192,7 @@ ViconDriverNode::on_configure(const rclcpp_lifecycle::State &)
 CallbackReturnT
 ViconDriverNode::on_activate(const rclcpp_lifecycle::State &)
 {
-  marker_pub_->on_activate();
+  markers_pub_->on_activate();
   rigid_bodies_pub_->on_activate();
 
   set_settings_vicon();
@@ -207,7 +206,7 @@ ViconDriverNode::on_activate(const rclcpp_lifecycle::State &)
 CallbackReturnT
 ViconDriverNode::on_deactivate(const rclcpp_lifecycle::State &)
 {
-  marker_pub_->on_deactivate();
+  markers_pub_->on_deactivate();
   rigid_bodies_pub_->on_deactivate();
 
   client.DisableSegmentData();
