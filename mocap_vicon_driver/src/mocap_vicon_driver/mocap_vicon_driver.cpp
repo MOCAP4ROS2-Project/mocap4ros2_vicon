@@ -90,6 +90,7 @@ void ViconDriverNode::control_stop(const mocap_control_msgs::msg::Control::Share
 // In charge of get the Vicon information and convert it to vicon_msgs
 void ViconDriverNode::process_frame()
 {
+  // TODO: or other publisher rigid bodies
   if (marker_pub_->get_subscription_count() == 0) {
     return;
   }
@@ -105,6 +106,7 @@ void ViconDriverNode::process_frame()
       "GetFrame succeeded. Got frame [%d] at rate [%3.3f]", OutputFrameNum.FrameNumber,
       OutputFrameRate.FrameRateHz);
 
+    // rclcpp::Duration frame_delay = rclcpp::Duration(client.GetLatencyTotal().Total);
 
     mocap_msgs::msg::RigidBodies rigid_bodies_msg;
     rigid_bodies_msg.header.stamp = now();  // TODO: add client.GetLatencyTotal() ?
@@ -128,9 +130,9 @@ void ViconDriverNode::process_frame()
           _Output_GetMarkerGlobalTranslation =
           client.GetMarkerGlobalTranslation(this_subject_name, this_marker.marker_name);
 
-        this_marker.translation.x = _Output_GetMarkerGlobalTranslation.Translation[0];
-        this_marker.translation.y = _Output_GetMarkerGlobalTranslation.Translation[1];
-        this_marker.translation.z = _Output_GetMarkerGlobalTranslation.Translation[2];
+        this_marker.translation.x = _Output_GetMarkerGlobalTranslation.Translation[0]/1000.0;
+        this_marker.translation.y = _Output_GetMarkerGlobalTranslation.Translation[1]/1000.0;
+        this_marker.translation.z = _Output_GetMarkerGlobalTranslation.Translation[2]/1000.0;
 
         markers_msg.markers.push_back(this_marker);
       }
@@ -148,9 +150,9 @@ void ViconDriverNode::process_frame()
         mocap_msgs::msg::RigidBody this_segment;
         this_segment.rigid_body_name = this_segment_name;
         // TODO: move markers to rigid body
-        this_segment.pose.position.x = trans.Translation[0];
-        this_segment.pose.position.y = trans.Translation[1];
-        this_segment.pose.position.z = trans.Translation[2];
+        this_segment.pose.position.x = trans.Translation[0]/1000.0;
+        this_segment.pose.position.y = trans.Translation[1]/1000.0;
+        this_segment.pose.position.z = trans.Translation[2]/1000.0;
         this_segment.pose.orientation.x = rot.Rotation[0];
         this_segment.pose.orientation.y = rot.Rotation[1];
         this_segment.pose.orientation.z = rot.Rotation[2];
