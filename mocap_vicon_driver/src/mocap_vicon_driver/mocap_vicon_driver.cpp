@@ -90,8 +90,7 @@ void ViconDriverNode::control_stop(const mocap_control_msgs::msg::Control::Share
 // In charge of get the Vicon information and convert it to vicon_msgs
 void ViconDriverNode::process_frame()
 {
-  // TODO: or other publisher rigid bodies
-  if (marker_pub_->get_subscription_count() == 0) {
+  if (marker_pub_->get_subscription_count() == 0 && rigid_bodies_pub_->get_subscription_count() == 0) {
     return;
   }
 
@@ -150,6 +149,7 @@ void ViconDriverNode::process_frame()
           client.GetSegmentGlobalRotationQuaternion(this_subject_name, this_segment_name);
 
         mocap_msgs::msg::RigidBody this_segment;
+        // TODO: this_segment_name is 'root', subject name might be better
         this_segment.rigid_body_name = this_segment_name;
         // TODO: move markers to rigid body
         this_segment.pose.position.x = trans.Translation[0]/1000.0;
