@@ -151,7 +151,6 @@ void ViconDriverNode::process_frame()
         mocap_msgs::msg::RigidBody this_segment;
         // TODO: this_segment_name is 'root', subject name might be better
         this_segment.rigid_body_name = this_segment_name;
-        // TODO: move markers to rigid body
         this_segment.pose.position.x = trans.Translation[0]/1000.0;
         this_segment.pose.position.y = trans.Translation[1]/1000.0;
         this_segment.pose.position.z = trans.Translation[2]/1000.0;
@@ -159,6 +158,7 @@ void ViconDriverNode::process_frame()
         this_segment.pose.orientation.y = rot.Rotation[1];
         this_segment.pose.orientation.z = rot.Rotation[2];
         this_segment.pose.orientation.w = rot.Rotation[3];
+        this_segment.markers = markers_msg.markers;
         rigid_bodies_msg.rigidbodies.push_back(this_segment);
       }
       rigid_bodies_pub_->publish(rigid_bodies_msg);
