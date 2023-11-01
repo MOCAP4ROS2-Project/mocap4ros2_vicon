@@ -110,10 +110,12 @@ void ViconDriverNode::process_frame()
 
     mocap_msgs::msg::RigidBodies rigid_bodies_msg;
     rigid_bodies_msg.header.stamp = now();  // TODO: add client.GetLatencyTotal() ?
+    rigid_bodies_msg.header.frame_id = frame_id_;
     rigid_bodies_msg.frame_number = frameCount_++;
 
     mocap_msgs::msg::Markers markers_msg;
     markers_msg.header.stamp = now();  // TODO: add client.GetLatencyTotal() ?
+    rigid_bodies_msg.header.frame_id = frame_id_;
     markers_msg.frame_number = frameCount_++;
 
     unsigned int SubjectCount = client.GetSubjectCount().SubjectCount;
