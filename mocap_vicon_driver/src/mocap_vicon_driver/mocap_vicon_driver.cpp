@@ -57,6 +57,8 @@ void ViconDriverNode::set_settings_vicon()
     Enum2String(_Output_GetAxisMapping.ZAxis).c_str());
 
   client.EnableSegmentData();
+  client.EnableMarkerData();
+  client.EnableUnlabeledMarkerData();
 
   RCLCPP_INFO(
     get_logger(), "IsSegmentDataEnabled? %s",
@@ -103,12 +105,6 @@ void ViconDriverNode::process_frame()
       "GetFrame succeeded. Got frame [%d] at rate [%3.3f]", OutputFrameNum.FrameNumber,
       OutputFrameRate.FrameRateHz);
 
-    // TODO: part of vicon settings, move to on_activate?
-    client.EnableSegmentData();
-    client.EnableMarkerData();
-    client.EnableUnlabeledMarkerData();
-
-    rclcpp::Duration frame_delay = rclcpp::Duration(client.GetLatencyTotal().Total);
 
     mocap_msgs::msg::RigidBodies rigid_bodies_msg;
     rigid_bodies_msg.header.stamp = now();  // TODO: add client.GetLatencyTotal() ?
