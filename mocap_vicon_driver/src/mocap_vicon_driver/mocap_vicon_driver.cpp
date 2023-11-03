@@ -130,6 +130,8 @@ void ViconDriverNode::process_frame()
           _Output_GetMarkerGlobalTranslation =
           client.GetMarkerGlobalTranslation(this_subject_name, this_marker.marker_name);
 
+        // if subject is not in the scene the position will be empty (0, 0, 0)
+        // it is also happens when one marker of the subject is lost or not being seen
         this_marker.translation.x = _Output_GetMarkerGlobalTranslation.Translation[0]/1000.0;
         this_marker.translation.y = _Output_GetMarkerGlobalTranslation.Translation[1]/1000.0;
         this_marker.translation.z = _Output_GetMarkerGlobalTranslation.Translation[2]/1000.0;
@@ -148,8 +150,8 @@ void ViconDriverNode::process_frame()
           client.GetSegmentGlobalRotationQuaternion(this_subject_name, this_segment_name);
 
         mocap_msgs::msg::RigidBody this_segment;
-        // TODO: this_segment_name is 'root', subject name might be better
-        this_segment.rigid_body_name = this_segment_name;
+        std::string rigid_body_name = this_subject_name + "." + this_segment_name;
+        this_segment.rigid_body_name = rigid_body_name;
         this_segment.pose.position.x = trans.Translation[0]/1000.0;
         this_segment.pose.position.y = trans.Translation[1]/1000.0;
         this_segment.pose.position.z = trans.Translation[2]/1000.0;
