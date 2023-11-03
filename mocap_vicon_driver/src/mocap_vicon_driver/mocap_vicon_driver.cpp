@@ -57,6 +57,8 @@ void ViconDriverNode::set_settings_vicon()
     Enum2String(_Output_GetAxisMapping.ZAxis).c_str());
 
   client.EnableSegmentData();
+  client.EnableMarkerData();
+  client.EnableUnlabeledMarkerData();
 
   RCLCPP_INFO(
     get_logger(), "IsSegmentDataEnabled? %s",
@@ -70,24 +72,24 @@ void ViconDriverNode::set_settings_vicon()
     _Output_GetVersion.Minor,
     _Output_GetVersion.Point
   );
-
 }
-
 
 // In charge of the transition of the lifecycle node
 void ViconDriverNode::control_start(const mocap_control_msgs::msg::Control::SharedPtr msg)
 {
+  (void)msg;
 }
 
 // In charge of the transition of the lifecycle node
 void ViconDriverNode::control_stop(const mocap_control_msgs::msg::Control::SharedPtr msg)
 {
+  (void)msg;
 }
 
 // In charge of get the Vicon information and convert it to vicon_msgs
 void ViconDriverNode::process_frame()
 {
-  if (marker_pub_->get_subscription_count() == 0) {
+  if (markers_pub_->get_subscription_count() == 0 && rigid_bodies_pub_->get_subscription_count() == 0) {
     return;
   }
 
@@ -102,11 +104,16 @@ void ViconDriverNode::process_frame()
       "GetFrame succeeded. Got frame [%d] at rate [%3.3f]", OutputFrameNum.FrameNumber,
       OutputFrameRate.FrameRateHz);
 
-    client.EnableMarkerData();
-    client.EnableUnlabeledMarkerData();
+    // rclcpp::Duration frame_delay = rclcpp::Duration(client.GetLatencyTotal().Total);
+
+    mocap_msgs::msg::RigidBodies rigid_bodies_msg;
+    rigid_bodies_msg.header.stamp = now();  // TODO: add client.GetLatencyTotal() ?
+    rigid_bodies_msg.header.frame_id = frame_id_;
+    rigid_bodies_msg.frame_number = frameCount_++;
 
     mocap_msgs::msg::Markers markers_msg;
-    markers_msg.header.stamp = now();
+    markers_msg.header.stamp = now();  // TODO: add client.GetLatencyTotal() ?
+    rigid_bodies_msg.header.frame_id = frame_id_;
     markers_msg.frame_number = frameCount_++;
 
     unsigned int SubjectCount = client.GetSubjectCount().SubjectCount;
@@ -114,7 +121,6 @@ void ViconDriverNode::process_frame()
       std::string this_subject_name = client.GetSubjectName(SubjectIndex).SubjectName;
 
       unsigned int num_subject_markers = client.GetMarkerCount(this_subject_name).MarkerCount;
-
       for (unsigned int MarkerIndex = 0; MarkerIndex < num_subject_markers; ++MarkerIndex) {
         mocap_msgs::msg::Marker this_marker;
         this_marker.id_type = mocap_msgs::msg::Marker::USE_NAME;
@@ -124,14 +130,39 @@ void ViconDriverNode::process_frame()
           _Output_GetMarkerGlobalTranslation =
           client.GetMarkerGlobalTranslation(this_subject_name, this_marker.marker_name);
 
-        this_marker.translation.x = _Output_GetMarkerGlobalTranslation.Translation[0];
-        this_marker.translation.y = _Output_GetMarkerGlobalTranslation.Translation[1];
-        this_marker.translation.z = _Output_GetMarkerGlobalTranslation.Translation[2];
+        // if subject is not in the scene the position will be empty (0, 0, 0)
+        // it is also happens when one marker of the subject is lost or not being seen
+        this_marker.translation.x = _Output_GetMarkerGlobalTranslation.Translation[0]/1000.0;
+        this_marker.translation.y = _Output_GetMarkerGlobalTranslation.Translation[1]/1000.0;
+        this_marker.translation.z = _Output_GetMarkerGlobalTranslation.Translation[2]/1000.0;
 
         markers_msg.markers.push_back(this_marker);
       }
+      markers_pub_->publish(markers_msg);
 
-      marker_pub_->publish(markers_msg);
+      unsigned int num_subject_segments = client.GetSegmentCount(this_subject_name).SegmentCount;
+      for (unsigned int SegmentIndex = 0; SegmentIndex < num_subject_segments; ++SegmentIndex) {
+        std::string this_segment_name = client.GetSegmentName(this_subject_name, SegmentIndex).SegmentName;
+
+        ViconDataStreamSDK::CPP::Output_GetSegmentGlobalTranslation trans =
+          client.GetSegmentGlobalTranslation(this_subject_name, this_segment_name);
+        ViconDataStreamSDK::CPP::Output_GetSegmentGlobalRotationQuaternion rot =
+          client.GetSegmentGlobalRotationQuaternion(this_subject_name, this_segment_name);
+
+        mocap_msgs::msg::RigidBody this_segment;
+        std::string rigid_body_name = this_subject_name + "." + this_segment_name;
+        this_segment.rigid_body_name = rigid_body_name;
+        this_segment.pose.position.x = trans.Translation[0]/1000.0;
+        this_segment.pose.position.y = trans.Translation[1]/1000.0;
+        this_segment.pose.position.z = trans.Translation[2]/1000.0;
+        this_segment.pose.orientation.x = rot.Rotation[0];
+        this_segment.pose.orientation.y = rot.Rotation[1];
+        this_segment.pose.orientation.z = rot.Rotation[2];
+        this_segment.pose.orientation.w = rot.Rotation[3];
+        this_segment.markers = markers_msg.markers;
+        rigid_bodies_msg.rigidbodies.push_back(this_segment);
+      }
+      rigid_bodies_pub_->publish(rigid_bodies_msg);
     }
   }
 }
@@ -146,7 +177,8 @@ ViconDriverNode::on_configure(const rclcpp_lifecycle::State &)
 {
   initParameters();
 
-  marker_pub_ = create_publisher<mocap_msgs::msg::Markers>("/markers", 1000);
+  markers_pub_ = create_publisher<mocap_msgs::msg::Markers>("/markers", rclcpp::QoS(1000));
+  rigid_bodies_pub_ = create_publisher<mocap_msgs::msg::RigidBodies>("/rigid_bodies", rclcpp::QoS(1000));
 
   auto stat = client.Connect(host_name_).Result;
 
@@ -162,10 +194,12 @@ ViconDriverNode::on_configure(const rclcpp_lifecycle::State &)
 CallbackReturnT
 ViconDriverNode::on_activate(const rclcpp_lifecycle::State &)
 {
-  marker_pub_->on_activate();
+  markers_pub_->on_activate();
+  rigid_bodies_pub_->on_activate();
 
   set_settings_vicon();
 
+  // TODO: timer freq to be configurable
   timer_ = create_wall_timer(10ms, std::bind(&ViconDriverNode::process_frame, this));
 
   return CallbackReturnT::SUCCESS;
@@ -174,7 +208,12 @@ ViconDriverNode::on_activate(const rclcpp_lifecycle::State &)
 CallbackReturnT
 ViconDriverNode::on_deactivate(const rclcpp_lifecycle::State &)
 {
-  marker_pub_->on_deactivate();
+  markers_pub_->on_deactivate();
+  rigid_bodies_pub_->on_deactivate();
+
+  client.DisableSegmentData();
+  client.DisableMarkerData();
+  client.DisableUnlabeledMarkerData();
 
   timer_ = nullptr;
 
