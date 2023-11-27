@@ -113,7 +113,7 @@ void ViconDriverNode::process_frame()
 
     mocap_msgs::msg::Markers markers_msg;
     markers_msg.header.stamp = now();  // TODO: add client.GetLatencyTotal() ?
-    rigid_bodies_msg.header.frame_id = frame_id_;
+    markers_msg.header.frame_id = frame_id_;
     markers_msg.frame_number = frameCount_++;
 
     unsigned int SubjectCount = client.GetSubjectCount().SubjectCount;
@@ -138,7 +138,6 @@ void ViconDriverNode::process_frame()
 
         markers_msg.markers.push_back(this_marker);
       }
-      markers_pub_->publish(markers_msg);
 
       unsigned int num_subject_segments = client.GetSegmentCount(this_subject_name).SegmentCount;
       for (unsigned int SegmentIndex = 0; SegmentIndex < num_subject_segments; ++SegmentIndex) {
@@ -162,6 +161,12 @@ void ViconDriverNode::process_frame()
         this_segment.markers = markers_msg.markers;
         rigid_bodies_msg.rigidbodies.push_back(this_segment);
       }
+    }
+    // Publishing messages
+    if (markers_msg.markers.size() > 0) {
+      markers_pub_->publish(markers_msg);
+    }
+    if (rigid_bodies_msg.rigidbodies.size() > 0) {
       rigid_bodies_pub_->publish(rigid_bodies_msg);
     }
   }
