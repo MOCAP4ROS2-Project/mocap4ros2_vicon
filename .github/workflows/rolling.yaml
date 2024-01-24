@@ -1,0 +1,36 @@
+name: rolling
+
+on:
+  pull_request:
+    branches:
+      - rolling
+  push:
+    branches:
+      - rolling
+      
+jobs:
+  build-and-test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-22.04]
+      fail-fast: false
+    steps:
+      - name: Setup ROS 2
+        uses: ros-tooling/setup-ros@0.7.1
+        with:
+          required-ros-distributions: humble
+      - name: build and test
+        uses: ros-tooling/action-ros-ci@0.3.5
+        with:
+          package-name: mocap4r2_vicon_driver
+          target-ros2-distro: humble
+          vcs-repo-file-url: https://raw.githubusercontent.com/MOCAP4ROS2-Project/mocap4ros2_vicon/rolling/dependency_repos.repos
+      - name: Codecov
+        uses: codecov/codecov-action@v1.1.0
+        with:
+          file: ros_ws/lcov/total_coverage.info
+          flags: unittests
+          name: codecov-umbrella
+          # yml: ./codecov.yml
+          fail_ci_if_error: false
