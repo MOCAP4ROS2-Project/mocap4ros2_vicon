@@ -7,10 +7,10 @@ This project provides support for ROS2 integration with Vicon cameras (MOCAP sys
 # Installation
 
 ## Dependencies:
-Vicon drivers for ROS2 are based on Vicon DataStream SDK 1.11.0. When compiling the `mocap_vicon_driver`, SDK is downloaded and installed, requiring packages `wget` and `p7zip-full` for this.
+Vicon drivers for ROS2 are based on Vicon DataStream SDK 1.11.0. When compiling the `mocap4r2_vicon_driver`, SDK is downloaded and installed, requiring packages `wget` and `p7zip-full` for this.
 Also, our package depends on other two repositories from MOCAP4ROS2 Project:
-- [mocap_msgs](https://github.com/MOCAP4ROS2-Project/mocap_msgs)
-- [mocap_control](https://github.com/MOCAP4ROS2-Project/mocap)
+- [mocap4r2_msgs](https://github.com/MOCAP4ROS2-Project/mocap4r2_msgs)
+- [mocap4r2_control](https://github.com/MOCAP4ROS2-Project/mocap)
 
 A rosinstall file is provided to automatically manage them. 
 
@@ -22,8 +22,8 @@ The following commands cover all the necessary steps to install DataStream SDK, 
 sudo apt-get install wget git p7zip-full 
 
 ## create workspace
-mkdir -p ~/mocap_ws/src
-cd ~/mocap_ws/src
+mkdir -p ~/mocap4r2_ws/src
+cd ~/mocap4r2_ws/src
 
 ## clone vicon repository
 git clone https://github.com/MOCAP4ROS2-Project/mocap4ros2_vicon.git -b master
@@ -38,22 +38,22 @@ rosdep update
 rosdep install --from-paths . --ignore-packages-from-source --rosdistro humble -y
 
 ## build all
-cd ~/mocap_ws/
-colcon build --symlink-install --packages-up-to mocap_vicon_driver
+cd ~/mocap4r2_ws/
+colcon build --symlink-install --packages-up-to mocap4r2_vicon_driver
 ```
 
 # Configuration
 
-Check `config/mocap_vicon_driver_params.yaml` for the available parameters. Note that `host_name` should be the IP address and port of the machine running VICON tracker. 
+Check `config/mocap4r2_vicon_driver_params.yaml` for the available parameters. Note that `host_name` should be the IP address and port of the machine running VICON tracker. 
 
 # Launching
 After sourcing the workspace, the Vicon driver can be started using the provided launcher:
 
-`ros2 launch mocap_vicon_driver mocap_vicon_driver_launch.py`
+`ros2 launch mocap4r2_vicon_driver mocap4r2_vicon_driver_launch.py`
 
 Remember that the vicon driver is a lifecycle node, so it needs to be signaled to start:
 
-`ros2 lifecycle set /mocap_vicon_driver_node activate`
+`ros2 lifecycle set /mocap4r2_vicon_driver_node activate`
 
 # About MOCAP4ROS2
 
