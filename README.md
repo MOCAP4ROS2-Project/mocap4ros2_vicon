@@ -1,6 +1,6 @@
 # mocap4ros2_vicon
 
-[![Build Status](https://travis-ci.com/MOCAP4ROS2-Project/mocap4ros2_vicon.svg?branch=master)](https://travis-ci.com/MOCAP4ROS2-Project/mocap4ros2_vicon)
+[![rolling](https://github.com/MOCAP4ROS2-Project/mocap4ros2_vicon/actions/workflows/rolling.yaml/badge.svg)](https://github.com/MOCAP4ROS2-Project/mocap4ros2_vicon/actions/workflows/rolling.yaml)
 
 This project provides support for ROS2 integration with Vicon cameras (MOCAP systems based on vision) as part of the project [MOCAP4ROS2](https://rosin-project.eu/ftp/mocap4ros2).
 
