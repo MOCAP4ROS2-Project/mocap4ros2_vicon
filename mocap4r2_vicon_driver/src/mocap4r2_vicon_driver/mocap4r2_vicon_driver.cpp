@@ -111,15 +111,15 @@ void ViconDriverNode::process_frame()
 
     // rclcpp::Duration frame_delay = rclcpp::Duration(client.GetLatencyTotal().Total);
 
-    mocap4r2_msgs::msg::RigidBodies rigid_bodies_msg;
+    mocap_interfaces::msg::RigidBodyArray rigid_bodies_msg;
     rigid_bodies_msg.header.stamp = now();  // TODO(any): add client.GetLatencyTotal() ?
     rigid_bodies_msg.header.frame_id = frame_id_;
-    rigid_bodies_msg.frame_number = frameCount_++;
+    rigid_bodies_msg.seq = frameCount_++;
 
-    mocap4r2_msgs::msg::Markers markers_msg;
+    mocap_interfaces::msg::MarkerArray markers_msg;
     markers_msg.header.stamp = now();  // TODO(any): add client.GetLatencyTotal() ?
     markers_msg.header.frame_id = frame_id_;
-    markers_msg.frame_number = frameCount_++;
+    markers_msg.seq = frameCount_++;
 
     unsigned int SubjectCount = client.GetSubjectCount().SubjectCount;
     for (unsigned int SubjectIndex = 0; SubjectIndex < SubjectCount; ++SubjectIndex) {
@@ -127,8 +127,8 @@ void ViconDriverNode::process_frame()
 
       unsigned int num_subject_markers = client.GetMarkerCount(this_subject_name).MarkerCount;
       for (unsigned int MarkerIndex = 0; MarkerIndex < num_subject_markers; ++MarkerIndex) {
-        mocap4r2_msgs::msg::Marker this_marker;
-        this_marker.id_type = mocap4r2_msgs::msg::Marker::USE_NAME;
+        mocap_interfaces::msg::Marker this_marker;
+        this_marker.id_type = mocap_interfaces::msg::Marker::USE_NAME;
         this_marker.marker_name = client.GetMarkerName(this_subject_name, MarkerIndex).MarkerName;
 
         ViconDataStreamSDK::CPP::Output_GetMarkerGlobalTranslation
@@ -154,7 +154,7 @@ void ViconDriverNode::process_frame()
         ViconDataStreamSDK::CPP::Output_GetSegmentGlobalRotationQuaternion rot =
           client.GetSegmentGlobalRotationQuaternion(this_subject_name, this_segment_name);
 
-        mocap4r2_msgs::msg::RigidBody this_segment;
+        mocap_interfaces::msg::RigidBody this_segment;
         std::string rigid_body_name = this_subject_name + "." + this_segment_name;
         this_segment.rigid_body_name = rigid_body_name;
         this_segment.pose.position.x = trans.Translation[0] / 1000.0;
@@ -165,14 +165,14 @@ void ViconDriverNode::process_frame()
         this_segment.pose.orientation.z = rot.Rotation[2];
         this_segment.pose.orientation.w = rot.Rotation[3];
         this_segment.markers = markers_msg.markers;
-        rigid_bodies_msg.rigidbodies.push_back(this_segment);
+        rigid_bodies_msg.rigid_bodies.push_back(this_segment);
       }
     }
     // Publishing messages
     if (markers_msg.markers.size() > 0) {
       markers_pub_->publish(markers_msg);
     }
-    if (rigid_bodies_msg.rigidbodies.size() > 0) {
+    if (rigid_bodies_msg.rigid_bodies.size() > 0) {
       rigid_bodies_pub_->publish(rigid_bodies_msg);
     }
   }
@@ -188,8 +188,9 @@ ViconDriverNode::on_configure(const rclcpp_lifecycle::State &)
 {
   initParameters();
 
-  markers_pub_ = create_publisher<mocap4r2_msgs::msg::Markers>("/markers", rclcpp::QoS(1000));
-  rigid_bodies_pub_ = create_publisher<mocap4r2_msgs::msg::RigidBodies>(
+  markers_pub_ = create_publisher<mocap_interfaces::msg::MarkerArray>(
+    "/markers", rclcpp::QoS(1000));
+  rigid_bodies_pub_ = create_publisher<mocap_interfaces::msg::RigidBodyArray>(
     "/rigid_bodies", rclcpp::QoS(1000));
 
   auto stat = client.Connect(host_name_).Result;

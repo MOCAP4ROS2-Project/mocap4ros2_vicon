@@ -15,7 +15,7 @@
   <depend>rclcpp_lifecycle</depend>
   <depend>std_msgs</depend>
   <depend>geometry_msgs</depend>
-  <depend>mocap4r2_msgs</depend>
+  <depend>mocap_interfaces</depend>
   <depend>mocap4r2_control</depend>
   <depend>boost</depend>
 

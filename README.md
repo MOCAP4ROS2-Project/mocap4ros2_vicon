@@ -9,7 +9,7 @@ This project provides support for ROS2 integration with Vicon cameras (MOCAP sys
 ## Dependencies:
 Vicon drivers for ROS2 are based on Vicon DataStream SDK 1.11.0. When compiling the `mocap4r2_vicon_driver`, SDK is downloaded and installed, requiring packages `wget` and `p7zip-full` for this.
 Also, our package depends on other two repositories from MOCAP4ROS2 Project:
-- [mocap4r2_msgs](https://github.com/MOCAP4ROS2-Project/mocap4r2_msgs)
+- [mocap_interfaces](https://github.com/MOCAP4ROS2-Project/mocap_interfaces)
 - [mocap4r2_control](https://github.com/MOCAP4ROS2-Project/mocap)
 
 A rosinstall file is provided to automatically manage them. 
@@ -26,7 +26,7 @@ mkdir -p ~/mocap4r2_ws/src
 cd ~/mocap4r2_ws/src
 
 ## clone vicon repository
-git clone https://github.com/MOCAP4ROS2-Project/mocap4ros2_vicon.git -b master
+git clone https://github.com/MOCAP4ROS2-Project/mocap4ros2_vicon.git -b rolling
 ## clone necessary mocap repositories
 cp mocap4ros2_vicon/mocap4ros2.rosinstall .rosinstall
 wstool update

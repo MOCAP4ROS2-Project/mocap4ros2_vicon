@@ -29,9 +29,9 @@
 #include "rclcpp/rclcpp.hpp"
 #include "mocap4r2_control/ControlledLifecycleNode.hpp"
 
-#include "mocap4r2_msgs/msg/marker.hpp"
-#include "mocap4r2_msgs/msg/markers.hpp"
-#include "mocap4r2_msgs/msg/rigid_bodies.hpp"
+#include "mocap_interfaces/msg/marker.hpp"
+#include "mocap_interfaces/msg/marker_array.hpp"
+#include "mocap_interfaces/msg/rigid_body_array.hpp"
 
 namespace mocap4r2_vicon_driver
 {
@@ -56,8 +56,8 @@ public:
 
 protected:
   ViconDataStreamSDK::CPP::Client client;
-  rclcpp_lifecycle::LifecyclePublisher<mocap4r2_msgs::msg::Markers>::SharedPtr markers_pub_;
-  rclcpp_lifecycle::LifecyclePublisher<mocap4r2_msgs::msg::RigidBodies>::SharedPtr
+  rclcpp_lifecycle::LifecyclePublisher<mocap_interfaces::msg::MarkerArray>::SharedPtr markers_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<mocap_interfaces::msg::RigidBodyArray>::SharedPtr
     rigid_bodies_pub_;
   rclcpp::TimerBase::SharedPtr timer_;
 
