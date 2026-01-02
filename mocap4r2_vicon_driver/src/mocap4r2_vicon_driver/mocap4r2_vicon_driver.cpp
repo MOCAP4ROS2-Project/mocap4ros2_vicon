@@ -125,6 +125,8 @@ void ViconDriverNode::process_frame()
     for (unsigned int SubjectIndex = 0; SubjectIndex < SubjectCount; ++SubjectIndex) {
       std::string this_subject_name = client.GetSubjectName(SubjectIndex).SubjectName;
 
+      std::vector<mocap4r2_msgs::msg::Marker> subject_markers; // temp marker list for subject
+
       unsigned int num_subject_markers = client.GetMarkerCount(this_subject_name).MarkerCount;
       for (unsigned int MarkerIndex = 0; MarkerIndex < num_subject_markers; ++MarkerIndex) {
         mocap4r2_msgs::msg::Marker this_marker;
@@ -142,6 +144,8 @@ void ViconDriverNode::process_frame()
         this_marker.translation.z = _Output_GetMarkerGlobalTranslation.Translation[2] / 1000.0;
 
         markers_msg.markers.push_back(this_marker);
+
+        subject_markers.push_back(this_marker); // add marker to the subject
       }
 
       unsigned int num_subject_segments = client.GetSegmentCount(this_subject_name).SegmentCount;
@@ -164,7 +168,7 @@ void ViconDriverNode::process_frame()
         this_segment.pose.orientation.y = rot.Rotation[1];
         this_segment.pose.orientation.z = rot.Rotation[2];
         this_segment.pose.orientation.w = rot.Rotation[3];
-        this_segment.markers = markers_msg.markers;
+        this_segment.markers = subject_markers;
         rigid_bodies_msg.rigidbodies.push_back(this_segment);
       }
     }
