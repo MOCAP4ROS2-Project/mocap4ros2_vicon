@@ -28,6 +28,7 @@ ViconDriverNode::ViconDriverNode()
   declare_parameter<std::string>("stream_mode", "ClientPull");
   declare_parameter<std::string>("host_name", "192.168.10.1:801");
   declare_parameter<std::string>("frame_id", "vicon_world");
+  declare_parameter<bool>("compensate_latency", true);
 }
 
 // In charge of choose the different driver options related and provided by the Vicon SDK
@@ -93,7 +94,8 @@ void ViconDriverNode::control_stop(const mocap4r2_control_msgs::msg::Control::Sh
 void ViconDriverNode::process_frame()
 {
   if (markers_pub_->get_subscription_count() == 0 &&
-    rigid_bodies_pub_->get_subscription_count() == 0)
+    rigid_bodies_pub_->get_subscription_count() == 0 &&
+    latency_pub_->get_subscription_count() == 0)
   {
     return;
   }
@@ -109,17 +111,36 @@ void ViconDriverNode::process_frame()
       "GetFrame succeeded. Got frame [%d] at rate [%3.3f]", OutputFrameNum.FrameNumber,
       OutputFrameRate.FrameRateHz);
 
-    // rclcpp::Duration frame_delay = rclcpp::Duration(client.GetLatencyTotal().Total);
+
+    const double latency_total = client.GetLatencyTotal().Total;
+
+    rclcpp::Time capture_stamp = now();
+    if (compensate_latency_) {
+      if (latency_total > 0.0) {
+        capture_stamp = capture_stamp - rclcpp::Duration::from_seconds(latency_total);
+      } else {
+        RCLCPP_WARN_ONCE(
+          get_logger(),
+          "compensate_latency is enabled but the server reports no latency samples; "
+          "stamping with now() instead of capture time");
+      }
+    }
 
     mocap4r2_msgs::msg::RigidBodies rigid_bodies_msg;
-    rigid_bodies_msg.header.stamp = now();  // TODO(any): add client.GetLatencyTotal() ?
+    rigid_bodies_msg.header.stamp = capture_stamp;
     rigid_bodies_msg.header.frame_id = frame_id_;
-    rigid_bodies_msg.frame_number = frameCount_++;
+    rigid_bodies_msg.frame_number = frameCount_;
 
     mocap4r2_msgs::msg::Markers markers_msg;
-    markers_msg.header.stamp = now();  // TODO(any): add client.GetLatencyTotal() ?
+    markers_msg.header.stamp = capture_stamp;
     markers_msg.header.frame_id = frame_id_;
-    markers_msg.frame_number = frameCount_++;
+    markers_msg.frame_number = frameCount_;
+
+    frameCount_++;
+
+    std_msgs::msg::Float64 latency_msg;
+    latency_msg.data = latency_total;
+    latency_pub_->publish(latency_msg);
 
     unsigned int SubjectCount = client.GetSubjectCount().SubjectCount;
     for (unsigned int SubjectIndex = 0; SubjectIndex < SubjectCount; ++SubjectIndex) {
@@ -191,6 +212,7 @@ ViconDriverNode::on_configure(const rclcpp_lifecycle::State &)
   markers_pub_ = create_publisher<mocap4r2_msgs::msg::Markers>("/markers", rclcpp::QoS(1000));
   rigid_bodies_pub_ = create_publisher<mocap4r2_msgs::msg::RigidBodies>(
     "/rigid_bodies", rclcpp::QoS(1000));
+  latency_pub_ = create_publisher<std_msgs::msg::Float64>("~/latency", rclcpp::QoS(10));
 
   auto stat = client.Connect(host_name_).Result;
 
@@ -208,6 +230,7 @@ ViconDriverNode::on_activate(const rclcpp_lifecycle::State &)
 {
   markers_pub_->on_activate();
   rigid_bodies_pub_->on_activate();
+  latency_pub_->on_activate();
 
   set_settings_vicon();
 
@@ -222,6 +245,7 @@ ViconDriverNode::on_deactivate(const rclcpp_lifecycle::State &)
 {
   markers_pub_->on_deactivate();
   rigid_bodies_pub_->on_deactivate();
+  latency_pub_->on_deactivate();
 
   client.DisableSegmentData();
   client.DisableMarkerData();
@@ -260,6 +284,7 @@ void ViconDriverNode::initParameters()
   get_parameter<std::string>("stream_mode", stream_mode_);
   get_parameter<std::string>("host_name", host_name_);
   get_parameter<std::string>("frame_id", frame_id_);
+  get_parameter<bool>("compensate_latency", compensate_latency_);
 }
 
 // Transform the Vicon SDK enumerations to strings

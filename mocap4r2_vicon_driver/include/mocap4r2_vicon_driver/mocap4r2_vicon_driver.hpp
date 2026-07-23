@@ -32,6 +32,7 @@
 #include "mocap4r2_msgs/msg/marker.hpp"
 #include "mocap4r2_msgs/msg/markers.hpp"
 #include "mocap4r2_msgs/msg/rigid_bodies.hpp"
+#include "std_msgs/msg/float64.hpp"
 
 namespace mocap4r2_vicon_driver
 {
@@ -59,11 +60,13 @@ protected:
   rclcpp_lifecycle::LifecyclePublisher<mocap4r2_msgs::msg::Markers>::SharedPtr markers_pub_;
   rclcpp_lifecycle::LifecyclePublisher<mocap4r2_msgs::msg::RigidBodies>::SharedPtr
     rigid_bodies_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::Float64>::SharedPtr latency_pub_;
   rclcpp::TimerBase::SharedPtr timer_;
 
   std::string stream_mode_;
   std::string host_name_;
   std::string frame_id_;
+  bool compensate_latency_ {true};
   int frameCount_ {0};
 
   void process_frame();
