@@ -18,6 +18,7 @@
 #include <atomic>
 #include <functional>
 #include <memory>
+#include <string>
 #include <thread>
 
 #include "mocap4r2_control/frame_publisher.hpp"
@@ -47,6 +48,8 @@ protected:
   CallbackReturn on_system_cleanup() override;
   void on_system_shutdown() override;
   double nominal_frame_rate() const override {return frame_rate_;}
+  std::string server() const override {return server_label_;}
+  bool connected() const override {return source_ && source_->connected();}
 
 private:
   void acquisition_loop();
@@ -60,6 +63,7 @@ private:
   std::atomic<bool> running_{false};
   std::atomic<double> frame_rate_{0.0};
   bool compensate_latency_{true};
+  std::string server_label_;
 };
 
 }  // namespace mocap4r2_vicon_driver

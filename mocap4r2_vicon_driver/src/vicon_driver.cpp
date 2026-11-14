@@ -58,6 +58,7 @@ ViconDriver::on_system_configure()
   source_ = factory_();
   source_->connect(
     host, std::chrono::milliseconds(static_cast<int64_t>(timeout * 1000.0)));  // throws
+  server_label_ = "Vicon DataStream at " + host;
   RCLCPP_INFO(
     get_logger(), "connected to Vicon DataStream at %s (SDK %s)", host.c_str(),
     source_->version().c_str());
