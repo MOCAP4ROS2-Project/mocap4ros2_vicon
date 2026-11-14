@@ -1,130 +1,95 @@
-cmake_minimum_required(VERSION 3.5)
-
+cmake_minimum_required(VERSION 3.10)
 project(mocap4r2_vicon_driver)
 
-# Default to C++17
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
-
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 find_package(ament_cmake REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(rclcpp_lifecycle REQUIRED)
-find_package(mocap4r2_msgs REQUIRED)
-find_package(geometry_msgs REQUIRED)
 find_package(mocap4r2_control REQUIRED)
+find_package(mocap4r2_interfaces REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rclcpp_components REQUIRED)
+find_package(Threads REQUIRED)
+find_path(ASIO_INCLUDE_DIR asio.hpp REQUIRED)
 
-# Used by Vicon SDK. Now we dont copy boost binaries shipped with driver.
-find_package(Boost REQUIRED COMPONENTS thread date_time chrono)
-
-set(dependencies
-  rclcpp
-  rclcpp_lifecycle
-  mocap4r2_msgs
-  mocap4r2_control
-  geometry_msgs
+# Vicon DataStream SDK 1.13 (MIT, unmodified sources), static and internal.
+set(VICON_SDK ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/ViconDataStreamSDK)
+file(GLOB_RECURSE VICON_SDK_SOURCES ${VICON_SDK}/*.cpp)
+add_library(vicon_datastream STATIC ${VICON_SDK_SOURCES})
+target_include_directories(vicon_datastream SYSTEM PUBLIC
+  ${VICON_SDK}
+  ${VICON_SDK}/DataStream
+  ${VICON_SDK}/DataStream/ViconDataStreamSDK_CPP
+  ${ASIO_INCLUDE_DIR}
 )
-
-file(GLOB_RECURSE VICON_HEADER_FILES "ThirdParty/*.h")
-file(GLOB_RECURSE VICON_SOURCES "ThirdParty/*.cpp")
-
-set(VICON_INCLUDE_DIRS "")
-foreach(HEADER ${VICON_HEADER_FILES})
-    get_filename_component(DIR ${HEADER} DIRECTORY)
-    set(VICON_INCLUDE_DIRS ${VICON_INCLUDE_DIRS} ${DIR})
-endforeach()
-list(REMOVE_DUPLICATES VICON_INCLUDE_DIRS)
-
-
-include_directories(
-  include
-  ThirdParty/DataStream
-  ThirdParty
-  ${VICON_INCLUDE_DIRS}
+target_compile_definitions(vicon_datastream PRIVATE
+  NDEBUG TCM_OFF_SITE TCM_LINUX TCM_UNIX RELEASE_SOFTWARE ASIO_STANDALONE=1
+  PROJECT_SOURCE_PATH=\".\"
 )
+target_compile_options(vicon_datastream PRIVATE -w)
+target_link_libraries(vicon_datastream PUBLIC Threads::Threads)
 
-add_library(vicon_sdk SHARED ${VICON_SOURCES})
-target_link_libraries(vicon_sdk PUBLIC ${Boost_LIBRARIES})
-
-
-add_library(
-  ${PROJECT_NAME}
-src/mocap4r2_vicon_driver/mocap4r2_vicon_driver.cpp)
-
-ament_target_dependencies(${PROJECT_NAME} ${dependencies})
-target_compile_definitions(${PROJECT_NAME}
-  PRIVATE "VICON_BUILDING_LIBRARY")
-
-add_executable(mocap4r2_vicon_driver_main
-  src/mocap4r2_vicon_driver_main.cpp
+add_library(${PROJECT_NAME} SHARED
+  src/sdk_vicon_source.cpp
+  src/vicon_conversion.cpp
+  src/vicon_driver.cpp
 )
-ament_target_dependencies(mocap4r2_vicon_driver_main ${dependencies})
-target_link_libraries(mocap4r2_vicon_driver_main
-  ${PROJECT_NAME}
-  vicon_sdk
+target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
+target_include_directories(${PROJECT_NAME} PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
 )
-
-ament_target_dependencies(mocap4r2_vicon_driver ${dependencies})
-target_link_libraries(mocap4r2_vicon_driver
-  vicon_sdk
+target_link_libraries(${PROJECT_NAME} PUBLIC
+  mocap4r2_control::mocap4r2_control
+  ${mocap4r2_interfaces_TARGETS}
+  rclcpp::rclcpp
 )
+target_link_libraries(${PROJECT_NAME} PRIVATE vicon_datastream rclcpp_components::component)
+rclcpp_components_register_nodes(${PROJECT_NAME} "mocap4r2_vicon_driver::ViconDriver")
 
-install(DIRECTORY include/
-  DESTINATION include/
-)
+add_executable(vicon_driver src/vicon_driver_main.cpp)
+target_link_libraries(vicon_driver ${PROJECT_NAME})
 
-install(DIRECTORY
-  launch
-  config
-  DESTINATION share/${PROJECT_NAME}
-)
-
-install(TARGETS
-  mocap4r2_vicon_driver_main
-  RUNTIME DESTINATION lib/${PROJECT_NAME}
-)
-
-install(TARGETS
-  ${PROJECT_NAME} vicon_sdk
+install(DIRECTORY include/ DESTINATION include/${PROJECT_NAME})
+install(DIRECTORY config launch DESTINATION share/${PROJECT_NAME})
+install(FILES ThirdParty/ViconDataStreamSDK/LICENSE
+  DESTINATION share/${PROJECT_NAME} RENAME LICENSE.ViconDataStreamSDK)
+install(TARGETS ${PROJECT_NAME}
+  EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
 )
+install(TARGETS vicon_driver RUNTIME DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
+  # Linters on our code only: the Vicon SDK is third-party code.
   find_package(ament_cmake_copyright REQUIRED)
   find_package(ament_cmake_cppcheck REQUIRED)
   find_package(ament_cmake_cpplint REQUIRED)
   find_package(ament_cmake_lint_cmake REQUIRED)
-  find_package(ament_cmake_xmllint REQUIRED)
   find_package(ament_cmake_uncrustify REQUIRED)
-
-
-  file(GLOB_RECURSE EXCLUDE_FILES ThirdParty/*)
-
-  ament_copyright(EXCLUDE ${EXCLUDE_FILES})
-  ament_cppcheck(
-    EXCLUDE ${EXCLUDE_FILES}
-    LANGUAGE c++
-  )
-  ament_cpplint(EXCLUDE ${EXCLUDE_FILES})
+  find_package(ament_cmake_xmllint REQUIRED)
+  set(lint_paths include src test)
+  ament_copyright(${lint_paths})
+  ament_cppcheck(${lint_paths} LANGUAGE c++)
+  ament_cpplint(${lint_paths})
   ament_lint_cmake()
-  ament_uncrustify(
-    EXCLUDE ${EXCLUDE_FILES}
-    LANGUAGE c++
-  )
+  if(NOT "$ENV{ROS_DISTRO}" STREQUAL "humble")
+    # uncrustify 0.72 of Humble formats differently: style is checked on newer distros
+    ament_uncrustify(${lint_paths} LANGUAGE c++)
+  endif()
+  ament_xmllint()
 
   find_package(ament_cmake_gtest REQUIRED)
-  ament_add_gtest(test_mocap4r2_vicon_driver test/test_mocap4r2_vicon_driver.cpp)
-  target_link_libraries(test_mocap4r2_vicon_driver ${PROJECT_NAME})
+  ament_add_gtest(test_vicon_conversion test/test_vicon_conversion.cpp)
+  target_link_libraries(test_vicon_conversion ${PROJECT_NAME})
+  ament_add_gtest(test_vicon_driver test/test_vicon_driver.cpp TIMEOUT 120)
+  target_link_libraries(test_vicon_driver ${PROJECT_NAME})
 endif()
 
-ament_export_include_directories(include)
-ament_export_libraries(${PROJECT_NAME})
-ament_export_dependencies(${dependencies})
+ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
+ament_export_dependencies(mocap4r2_control mocap4r2_interfaces rclcpp)
 ament_package()

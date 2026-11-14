@@ -1,0 +1,15 @@
+# Vicon driver (Nexus, Tracker, Shogun with DataStream enabled).
+vicon_driver:
+  ros__parameters:
+    host_name: "192.168.10.1:801"   # Vicon computer and DataStream port
+    timeout: 2.0                    # seconds to connect
+    compensate_latency: true        # stamp = reception - latency reported by Vicon
+    frame_id: "mocap"               # Vicon world (Z-up, metres)
+    publish_markers: true
+    publish_rigid_bodies: true      # one per subject (root segment)
+    publish_skeletons: true         # subjects with more than one segment
+    publish_tf: false
+    tf_prefix: ""
+    qos:
+      reliability: "reliable"
+      depth: 10
