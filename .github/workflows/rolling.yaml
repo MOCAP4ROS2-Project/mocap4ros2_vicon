@@ -1,4 +1,4 @@
-name: CI
+name: rolling
 
 on:
   push:
@@ -8,14 +8,10 @@ on:
 
 jobs:
   build:
-    name: ${{ matrix.distro }}
+    name: rolling
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        distro: [humble, jazzy, kilted, lyrical, rolling]
     container:
-      image: ros:${{ matrix.distro }}-ros-base
+      image: ros:rolling-ros-base
     defaults:
       run:
         shell: bash
@@ -30,14 +26,14 @@ jobs:
           if [ -f src/${{ github.event.repository.name }}/dependency_repos.repos ]; then
             vcs import src < src/${{ github.event.repository.name }}/dependency_repos.repos
           fi
-          rosdep update --rosdistro ${{ matrix.distro }}
-          rosdep install -y -i -r --from-paths src --rosdistro ${{ matrix.distro }}
+          rosdep update --rosdistro rolling
+          rosdep install -y -i -r --from-paths src --rosdistro rolling
       - name: Build
         run: |
-          source /opt/ros/${{ matrix.distro }}/setup.bash
+          source /opt/ros/rolling/setup.bash
           colcon build --event-handlers console_cohesion+ --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo
       - name: Test
         run: |
-          source /opt/ros/${{ matrix.distro }}/setup.bash
+          source /opt/ros/rolling/setup.bash
           colcon test --parallel-workers 1 --event-handlers console_cohesion+
           colcon test-result --verbose

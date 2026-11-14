@@ -1,0 +1,39 @@
+name: humble
+
+on:
+  push:
+    branches: [rolling]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: humble
+    runs-on: ubuntu-latest
+    container:
+      image: ros:humble-ros-base
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: src/${{ github.event.repository.name }}
+      - name: Dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends python3-vcstool python3-colcon-common-extensions
+          if [ -f src/${{ github.event.repository.name }}/dependency_repos.repos ]; then
+            vcs import src < src/${{ github.event.repository.name }}/dependency_repos.repos
+          fi
+          rosdep update --rosdistro humble
+          rosdep install -y -i -r --from-paths src --rosdistro humble
+      - name: Build
+        run: |
+          source /opt/ros/humble/setup.bash
+          colcon build --event-handlers console_cohesion+ --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo
+      - name: Test
+        run: |
+          source /opt/ros/humble/setup.bash
+          colcon test --parallel-workers 1 --event-handlers console_cohesion+
+          colcon test-result --verbose

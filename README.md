@@ -1,6 +1,6 @@
 # MOCAP4ROS2 Vicon driver
 
-[![CI](https://github.com/MOCAP4ROS2-Project/mocap4ros2_vicon/actions/workflows/ci.yaml/badge.svg?branch=rolling)](https://github.com/MOCAP4ROS2-Project/mocap4ros2_vicon/actions/workflows/ci.yaml)
+[![rolling](https://github.com/MOCAP4ROS2-Project/mocap4ros2_vicon/actions/workflows/rolling.yaml/badge.svg?branch=rolling)](https://github.com/MOCAP4ROS2-Project/mocap4ros2_vicon/actions/workflows/rolling.yaml) [![lyrical](https://github.com/MOCAP4ROS2-Project/mocap4ros2_vicon/actions/workflows/lyrical.yaml/badge.svg?branch=rolling)](https://github.com/MOCAP4ROS2-Project/mocap4ros2_vicon/actions/workflows/lyrical.yaml) [![kilted](https://github.com/MOCAP4ROS2-Project/mocap4ros2_vicon/actions/workflows/kilted.yaml/badge.svg?branch=rolling)](https://github.com/MOCAP4ROS2-Project/mocap4ros2_vicon/actions/workflows/kilted.yaml) [![jazzy](https://github.com/MOCAP4ROS2-Project/mocap4ros2_vicon/actions/workflows/jazzy.yaml/badge.svg?branch=rolling)](https://github.com/MOCAP4ROS2-Project/mocap4ros2_vicon/actions/workflows/jazzy.yaml) [![humble](https://github.com/MOCAP4ROS2-Project/mocap4ros2_vicon/actions/workflows/humble.yaml/badge.svg?branch=rolling)](https://github.com/MOCAP4ROS2-Project/mocap4ros2_vicon/actions/workflows/humble.yaml)
 
 `mocap4r2_vicon_driver` streams Vicon Nexus, Tracker and Shogun into
 [MOCAP4ROS2](https://mocap4ros2-project.github.io). It builds the Vicon DataStream SDK
