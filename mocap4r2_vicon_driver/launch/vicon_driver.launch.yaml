@@ -17,6 +17,7 @@ launch:
   - arg: {name: params_file, default: "$(find-pkg-share mocap4r2_vicon_driver)/config/vicon_driver.yaml", description: "Parameters of the driver"}
   - arg: {name: namespace, default: ""}
   - arg: {name: autostart, default: configure, description: "none, configure (connect and wait for START) or activate"}
+  - arg: {name: rviz, default: "true", description: "Show the data in RViz (marker_viz and rviz2)"}
   - node:
       pkg: mocap4r2_vicon_driver
       exec: vicon_driver
@@ -26,3 +27,8 @@ launch:
       param:
         - {from: "$(var params_file)"}
         - {name: autostart, value: "$(var autostart)"}
+  - include:
+      if: $(var rviz)
+      file: "$(find-pkg-share mocap4r2_marker_viz)/launch/marker_viz.launch.yaml"
+      arg:
+        - {name: namespace, value: "$(var namespace)"}
