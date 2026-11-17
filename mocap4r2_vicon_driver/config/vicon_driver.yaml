@@ -4,6 +4,7 @@ vicon_driver:
     host_name: "192.168.10.1:801"   # Vicon computer and DataStream port
     timeout: 2.0                    # seconds to connect
     compensate_latency: true        # stamp = reception - latency reported by Vicon
+    stream_mode: "ClientPullPreFetch"  # or ClientPull / ServerPush (e.g. Tracker 3.6)
     frame_id: "mocap"               # Vicon world (Z-up, metres)
     publish_markers: true
     publish_rigid_bodies: true      # one per subject (root segment)

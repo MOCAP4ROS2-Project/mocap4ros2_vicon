@@ -37,6 +37,7 @@ using lifecycle_msgs::msg::Transition;
 using mocap4r2_interfaces::msg::RigidBodies;
 using mocap4r2_vicon_driver::ViconDriver;
 using mocap4r2_vicon_driver::ViconFrame;
+using mocap4r2_vicon_driver::StreamMode;
 using mocap4r2_vicon_driver::ViconSource;
 
 // Shared state of the fake Vicon system, visible to the test.
@@ -48,6 +49,7 @@ struct FakeVicon
   std::atomic<int> connects{0};
   std::atomic<int> disconnects{0};
   std::atomic<bool> stalled{false};  // connected but no frames
+  std::atomic<StreamMode> mode{StreamMode::ClientPull};  // last mode passed to connect
 };
 
 class FakeSource : public ViconSource
@@ -55,11 +57,12 @@ class FakeSource : public ViconSource
 public:
   explicit FakeSource(std::shared_ptr<FakeVicon> v)
   : v_(std::move(v)) {}
-  void connect(const std::string & host, std::chrono::milliseconds) override
+  void connect(const std::string & host, std::chrono::milliseconds, StreamMode mode) override
   {
     if (!v_->reachable || host.empty()) {
       throw std::runtime_error("unreachable");
     }
+    v_->mode = mode;
     v_->connects++;
     connected_ = true;
   }
@@ -223,7 +226,7 @@ TEST_F(ViconDriverTest, cleanup_disconnects_and_reconfigure_works)
 TEST_F(ViconDriverTest, invalid_parameters)
 {
   for (const auto & p : std::vector<std::vector<rclcpp::Parameter>>{
-    {{"host_name", ""}}, {{"timeout", -1.0}}})
+    {{"host_name", ""}}, {{"timeout", -1.0}}, {{"stream_mode", "Bogus"}}})
   {
     auto d = make(p);
     d->trigger_transition(Transition::TRANSITION_CONFIGURE);
@@ -232,6 +235,18 @@ TEST_F(ViconDriverTest, invalid_parameters)
     driver_.reset();
   }
   EXPECT_EQ(vicon_->connects, 0);
+}
+
+TEST_F(ViconDriverTest, stream_mode_reaches_source)
+{
+  auto d = make();
+  d->trigger_transition(Transition::TRANSITION_CONFIGURE);
+  EXPECT_EQ(vicon_->mode, StreamMode::ClientPullPreFetch);  // default
+  d->trigger_transition(Transition::TRANSITION_CLEANUP);
+  d->set_parameter({"stream_mode", "ServerPush"});
+  d->trigger_transition(Transition::TRANSITION_CONFIGURE);
+  EXPECT_EQ(d->get_current_state().id(), State::PRIMARY_STATE_INACTIVE);
+  EXPECT_EQ(vicon_->mode, StreamMode::ServerPush);
 }
 
 TEST_F(ViconDriverTest, destroy_while_streaming)

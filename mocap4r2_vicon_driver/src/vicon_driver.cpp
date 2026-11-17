@@ -35,6 +35,7 @@ ViconDriver::ViconDriver(const rclcpp::NodeOptions & options, SourceFactory fact
   declare_parameter<std::string>("host_name", "192.168.10.1:801");
   declare_parameter<double>("timeout", 2.0);
   declare_parameter<bool>("compensate_latency", true);
+  declare_parameter<std::string>("stream_mode", "ClientPullPreFetch");
   mocap4r2_control::declare_frame_publisher_parameters(*this);
 }
 
@@ -53,11 +54,25 @@ ViconDriver::on_system_configure()
     RCLCPP_ERROR(get_logger(), "host_name must not be empty and timeout must be > 0");
     return CallbackReturn::FAILURE;
   }
+  const auto stream_mode = get_parameter("stream_mode").as_string();
+  StreamMode mode;
+  if (stream_mode == "ClientPull") {
+    mode = StreamMode::ClientPull;
+  } else if (stream_mode == "ClientPullPreFetch") {
+    mode = StreamMode::ClientPullPreFetch;
+  } else if (stream_mode == "ServerPush") {
+    mode = StreamMode::ServerPush;
+  } else {
+    RCLCPP_ERROR(
+      get_logger(), "stream_mode must be ClientPull, ClientPullPreFetch or ServerPush (got '%s')",
+      stream_mode.c_str());
+    return CallbackReturn::FAILURE;
+  }
   compensate_latency_ = get_parameter("compensate_latency").as_bool();
   converter_ = ViconConverter();
   source_ = factory_();
   source_->connect(
-    host, std::chrono::milliseconds(static_cast<int64_t>(timeout * 1000.0)));  // throws
+    host, std::chrono::milliseconds(static_cast<int64_t>(timeout * 1000.0)), mode);  // throws
   server_label_ = "Vicon DataStream at " + host;
   RCLCPP_INFO(
     get_logger(), "connected to Vicon DataStream at %s (SDK %s)", host.c_str(),

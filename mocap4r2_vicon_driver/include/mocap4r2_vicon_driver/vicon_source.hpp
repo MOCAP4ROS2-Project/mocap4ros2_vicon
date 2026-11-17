@@ -59,13 +59,19 @@ struct ViconFrame
   std::vector<std::array<double, 3>> unlabeled_markers;
 };
 
+// DataStream server frame request method. ClientPullPreFetch needs a
+// server that answers RequestNextFrame; older versions (e.g. Vicon Tracker 3.6) only
+// deliver frames with ClientPull or ServerPush.
+enum class StreamMode {ClientPull, ClientPullPreFetch, ServerPush};
+
 // Source of Vicon frames: the DataStream SDK, or a fake one in tests.
 class ViconSource
 {
 public:
   virtual ~ViconSource() = default;
   // Connect to host[:port]. Throws std::runtime_error on failure.
-  virtual void connect(const std::string & host, std::chrono::milliseconds timeout) = 0;
+  virtual void connect(
+    const std::string & host, std::chrono::milliseconds timeout, StreamMode mode) = 0;
   // Wait for the next frame. Returns false on timeout or when disconnected.
   virtual bool next_frame(ViconFrame & frame, std::chrono::milliseconds timeout) = 0;
   virtual bool connected() const = 0;
