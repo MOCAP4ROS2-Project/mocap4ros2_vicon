@@ -35,7 +35,8 @@ class SdkViconSource : public ViconSource
 public:
   ~SdkViconSource() override {disconnect();}
 
-  void connect(const std::string & host, std::chrono::milliseconds timeout) override
+  void connect(
+    const std::string & host, std::chrono::milliseconds timeout, StreamMode mode) override
   {
     client_.SetConnectionTimeout(
       static_cast<unsigned int>(std::max<int64_t>(timeout.count(), 10)));
@@ -43,9 +44,21 @@ public:
     if (r != sdk::Result::Success) {
       throw std::runtime_error("cannot connect to Vicon DataStream at " + host);
     }
-    // Pre-fetch keeps GetFrame short (never blocked by a silent server), and a
-    // buffer of one frame never delivers stale data after a pause.
-    client_.SetStreamMode(sdk::StreamMode::ClientPullPreFetch);
+    // ClientPullPreFetch (default) keeps GetFrame short, so it is never blocked by
+    // a silent server. With ClientPull and ServerPush the SDK may block up to 1 s per
+    // GetFrame when no frame arrives, which can delay deactivation by as much.
+    switch (mode) {
+      case StreamMode::ClientPull:
+        client_.SetStreamMode(sdk::StreamMode::ClientPull);
+        break;
+      case StreamMode::ServerPush:
+        client_.SetStreamMode(sdk::StreamMode::ServerPush);
+        break;
+      case StreamMode::ClientPullPreFetch:
+        client_.SetStreamMode(sdk::StreamMode::ClientPullPreFetch);
+        break;
+    }
+    // A buffer of one frame never delivers stale data after a pause.
     client_.SetBufferSize(1);
     client_.SetAxisMapping(sdk::Direction::Forward, sdk::Direction::Left, sdk::Direction::Up);
     client_.EnableSegmentData();
